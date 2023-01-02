@@ -1,38 +1,52 @@
 mod ao;
+mod controller;
+mod router;
+mod service;
 mod vo;
-
-use axum::extract::Json;
-use axum::{routing::post, Router};
-use serde_json::{json, Value};
 use std::net::SocketAddr;
+use tokio::signal;
+mod jwt;
 
 #[tokio::main]
 async fn main() {
+    // install global collector configured based on RUST_LOG env var.
+    tracing_subscriber::fmt::init();
+
     // build our application with a route
-    let app = Router::new().route("/hello-world", post(hello_world_handler));
+    let router = router::create_router();
 
     // run it
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     println!("listening on {}", addr);
     axum::Server::bind(&addr)
-        .serve(app.into_make_service())
+        .serve(router.into_make_service())
+        .with_graceful_shutdown(shutdown_signal())
         .await
         .unwrap();
 }
 
-// Content-Type: application/json
-async fn hello_world_handler(Json(payload): Json<Value>) -> Json<Value> {
-    // request
-    println!("=============>> {:?}", payload);
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
 
-    let req: ao::HelloWorldAO = serde_json::from_value(payload).unwrap();
-    println!("=============>> req: {:?}", req);
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
 
-    // response
-    let res = vo::HelloWorldVO::new("desc".to_string(), 18);
-    Json(json!({
-        "code":200,
-        "message":"success",
-        "payload":res,
-    }))
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
+
+    println!("signal received, starting graceful shutdown(Do Others Here!).");
 }
