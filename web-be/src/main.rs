@@ -5,19 +5,27 @@ mod service;
 mod vo;
 use std::net::SocketAddr;
 use tokio::signal;
+mod config;
+mod init;
 mod jwt;
+mod lib;
 
 #[tokio::main]
 async fn main() {
-    // install global collector configured based on RUST_LOG env var.
-    tracing_subscriber::fmt::init();
+    // init
+    init::init();
 
     // build our application with a route
     let router = router::create_router();
 
     // run it
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
-    println!("listening on {}", addr);
+    let server_config = config::CONFIG.clone().get_server_config();
+    let addr = SocketAddr::from(([0, 0, 0, 0], server_config.get_port() as u16));
+    tracing::info!(
+        "Application `{}` listening on `{}`",
+        server_config.get_name(),
+        addr
+    );
     axum::Server::bind(&addr)
         .serve(router.into_make_service())
         .with_graceful_shutdown(shutdown_signal())

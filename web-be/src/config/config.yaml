@@ -1,0 +1,9 @@
+server:
+  name: "web-fe"
+  port: 3000
+
+mail:
+
+mysql:
+
+mongodb:
