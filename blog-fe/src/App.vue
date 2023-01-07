@@ -1,112 +1,86 @@
-<template>
-  <div class="container">
-    <Nav v-if="state.isShowNav" />
-    <div class="layout">
-      <router-view />
-      <CustomSlider v-if="state.isShowSlider"></CustomSlider>
-    </div>
-    <ArrowUp></ArrowUp>
-    <!-- <Footer v-if="isShowNav"></Footer> -->
-  </div>
-</template>
-
-<script lang="ts">
-import { defineComponent, defineAsyncComponent, reactive, onMounted } from "vue";
-import { useRouter, useRoute, onBeforeRouteUpdate } from 'vue-router';
-import { isMobileOrPc } from "./utils/utils";
-
-// 移动端 rem 单位适配
-if (isMobileOrPc()) {
-  // width * 100 / 750 = width / 7.5
-  // 1rem = 100px
-  var width = window.screen.width;
-  window.document.getElementsByTagName("html")[0].style.fontSize =
-    width / 7.5 + "px";
-}
-
-export default defineComponent({
-  name: "App",
-  components: {
-    Nav: defineAsyncComponent(() => import("./components/Nav.vue")),
-    CustomSlider: defineAsyncComponent(
-      () => import("./components/CustomSlider.vue")
-    ),
-    Footer: defineAsyncComponent(() => import("./components/Footer.vue")),
-    ArrowUp: defineAsyncComponent(() => import("./components/Footer.vue")),
-  },
-  watch: {
-    $route: function (val: any, oldVal: any) {
-      this.routeChange(val, oldVal);
-    },
-  },
-  setup() {
-    const state = reactive({
-      isShowNav: false,
-      isShowSlider: false,
-    });
-
-    // const router = useRouter();
-    const route = useRoute();
-
-    const routeChange = (val: any, oldVal: any): void => {
-      const referrer: any = document.getElementById("referrer");
-      if (val.path === "/") {
-        state.isShowNav = false;
-        referrer.setAttribute("content", "always");
-      } else {
-        state.isShowNav = true;
-        referrer.setAttribute("content", "never");
-      }
-      const navs = [
-        "/articles",
-        "/archive",
-        "/archive",
-        "/project",
-        "/timeline",
-        "/message",
-      ];
-      if (navs.includes(val.path)) {
-        state.isShowSlider = true;
-      } else {
-        state.isShowSlider = false;
-      }
-      if (isMobileOrPc()) {
-        state.isShowSlider = false;
-      }
-    };
-
-    onMounted(() => {
-        routeChange(route, route);
-    })
-
-    // onBeforeRouteUpdate((to: any, from: any) => {
-    //     console.log(to, "=====");
-    //     console.log(from, "=====");
-    //     routeChange(to, from);
-    // });
-
-    return {
-      state,
-      routeChange,
-    };
-  },
-});
+<script setup lang="ts">
+import { RouterLink, RouterView } from "vue-router";
+import HelloWorld from "./components/HelloWorld.vue";
 </script>
 
-<style lang="less">
-@import url("./less/monokai_sublime.less");
-@import url("./less/index.less");
-@import url("./less/mobile.less");
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: left;
-  color: #2c3e50;
-  // width: 1200px;
-  padding-top: 61px;
+<template>
+  <header>
+    <img alt="Vue logo" class="logo" src="@/assets/logo.png" width="125" height="125" />
+
+    <div class="wrapper">
+      <HelloWorld msg="You did it!" />
+
+      <nav>
+        <RouterLink to="/">Home</RouterLink>
+        <RouterLink to="/about">About</RouterLink>
+        <RouterLink to="/home">MyHome</RouterLink>
+      </nav>
+    </div>
+  </header>
+
+  <RouterView />
+</template>
+
+<style scoped>
+header {
+  line-height: 1.5;
+  max-height: 100vh;
 }
-img {
-  vertical-align: bottom;
+
+.logo {
+  display: block;
+  margin: 0 auto 2rem;
+}
+
+nav {
+  width: 100%;
+  font-size: 12px;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+nav a.router-link-exact-active {
+  color: var(--color-text);
+}
+
+nav a.router-link-exact-active:hover {
+  background-color: transparent;
+}
+
+nav a {
+  display: inline-block;
+  padding: 0 1rem;
+  border-left: 1px solid var(--color-border);
+}
+
+nav a:first-of-type {
+  border: 0;
+}
+
+@media (min-width: 1024px) {
+  header {
+    display: flex;
+    place-items: center;
+    padding-right: calc(var(--section-gap) / 2);
+  }
+
+  .logo {
+    margin: 0 2rem 0 0;
+  }
+
+  header .wrapper {
+    display: flex;
+    place-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  nav {
+    text-align: left;
+    margin-left: -1rem;
+    font-size: 1rem;
+
+    padding: 1rem 0;
+    margin-top: 1rem;
+  }
 }
 </style>
