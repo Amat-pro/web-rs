@@ -21,9 +21,12 @@ lazy_static! {
 pub fn send_mail(to: String, subject: String, body: String) -> std::result::Result<(), Error> {
     let mail_config = CONFIG.get_mail_config();
 
+    let from = format!("{} <{}>", "WEB-RS", mail_config.get_user_name());
+
     let email = Message::builder()
-        .from(mail_config.get_user_name().parse().unwrap())
-        // .reply_to("Yuin <yuin@domain.tld>".parse().unwrap())
+        .from(from.parse().unwrap())
+        // reply-to: 信件回复的收件人. 用户直接回复邮件时, reply-to 就是默认的收件人. 如果用户不指定它, from 就是默认的收件人.
+        // .reply_to("Reply-To <luzhongbo@aliyun.com>".parse().unwrap())
         .to(to.parse().unwrap())
         .subject(subject)
         .body(body)
