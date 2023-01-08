@@ -15,7 +15,11 @@ pub struct ServerConfig {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct MailConfig {}
+pub struct MailConfig {
+    smtp_server: String,
+    user_name: String,
+    password: String,
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct MysqlConfig {}
@@ -48,5 +52,19 @@ impl ServerConfig {
 
     pub fn get_name(&self) -> String {
         self.name.clone()
+    }
+}
+
+impl MailConfig {
+    pub fn get_smtp_server(&self) -> String {
+        self.smtp_server.clone()
+    }
+
+    pub fn get_user_name(&self) -> String {
+        self.user_name.clone()
+    }
+
+    pub fn get_password(&self) -> String {
+        self.password.clone()
     }
 }

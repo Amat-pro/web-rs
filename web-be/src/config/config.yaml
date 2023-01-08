@@ -3,6 +3,9 @@ server:
   port: 3000
 
 mail:
+  smtp_server: smtp.qq.com
+  user_name: 549215892@qq.com
+  password: jiowtgcgnuawbcae
 
 mysql:
 
