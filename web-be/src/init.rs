@@ -13,5 +13,8 @@ pub fn init() {
     info!("do init redis connection manager");
     let _ = crate::lib::REDIS_CONNECTION_MANAGER.clone();
 
+    // init mongodb client
+    let _ = crate::lib::MONGODB_CLIENT;
+
     // do other inits
 }

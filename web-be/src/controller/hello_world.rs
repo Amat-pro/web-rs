@@ -1,6 +1,10 @@
-use crate::{jwt::Claims, lib::REDIS_CONNECTION_MANAGER};
+use crate::{
+    jwt::Claims,
+    lib::{MONGODB_CLIENT, REDIS_CONNECTION_MANAGER},
+};
 use axum::extract::Json;
 use redis::RedisError;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tracing::{info, span, warn, Level};
 
@@ -86,4 +90,65 @@ pub async fn test_redis_cmd_handler() -> Json<Value> {
             "payload":"",
         })),
     }
+}
+
+pub async fn test_mongodb_handler() -> Json<Value> {
+    let client = MONGODB_CLIENT.clone();
+    let db = client.database("Mytest");
+
+    let collection_names_r = db.list_collection_names(None).await;
+    match collection_names_r {
+        Ok(collection_names) => {
+            info!(
+                "test_mongodb_handler, collection_names: {:?}",
+                collection_names
+            );
+        }
+        Err(e) => {
+            warn!(
+                "test_mongodb_handler, list collection names fail, err: {}",
+                e
+            );
+        }
+    }
+
+    // Get a handle to a collection of `Book`.
+    let typed_collection = db.collection::<Book>("books");
+    let books = vec![
+        Book {
+            title: "The Grapes of Wrath".to_string(),
+            author: "John Steinbeck".to_string(),
+        },
+        Book {
+            title: "To Kill a Mockingbird".to_string(),
+            author: "Harper Lee".to_string(),
+        },
+    ];
+
+    // Insert the books into "mydb.books" collection, no manual conversion to BSON necessary.
+    let insert_many_r = typed_collection.insert_many(books, None).await;
+    match insert_many_r {
+        Ok(_) => Json(json!({
+            "code":200,
+            "message":"success",
+            "payload":"",
+        })),
+        Err(e) => {
+            warn!(
+                "test_mongodb_handler, insert many to Mytest.books fail, err: {}",
+                e
+            );
+            Json(json!({
+                "code":10000,
+                "message":"insert many to Mytest.books fail",
+                "payload":"",
+            }))
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct Book {
+    title: String,
+    author: String,
 }

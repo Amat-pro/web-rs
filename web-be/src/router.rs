@@ -1,6 +1,6 @@
 use crate::controller::{
     authenticate_handler, hello_world_handler, protected_hello_world_handler,
-    send_mail_code_handler, test_redis_cmd_handler,
+    send_mail_code_handler, test_mongodb_handler, test_redis_cmd_handler,
 };
 use axum::{routing::post, Router};
 
@@ -13,5 +13,6 @@ pub fn create_router() -> Router {
             post(protected_hello_world_handler),
         )
         .route("/test-redis-cmd", post(test_redis_cmd_handler))
+        .route("/test-mongodb", post(test_mongodb_handler))
         .route("/mail-code/send", post(send_mail_code_handler))
 }

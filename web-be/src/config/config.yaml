@@ -14,3 +14,7 @@ redis:
 mysql:
 
 mongodb:
+  # mongodb://[username:password@]host1[:port1][,...hostN[:portN]][/[defaultauthdb][?options]]
+  # refer: https://www.mongodb.com/docs/manual/reference/connection-string/
+  # the character of '@' in pass => %40
+  standalone_url: mongodb://maomao:maomao%40123@192.168.9.111:27017/Mytest

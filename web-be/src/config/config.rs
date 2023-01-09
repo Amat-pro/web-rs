@@ -26,7 +26,9 @@ pub struct MailConfig {
 pub struct MysqlConfig {}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct MongoDbConfig {}
+pub struct MongoDbConfig {
+    standalone_url: String,
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RedisConfig {
@@ -80,6 +82,12 @@ impl MailConfig {
 }
 
 impl RedisConfig {
+    pub fn get_standalone_url(&self) -> String {
+        self.standalone_url.clone()
+    }
+}
+
+impl MongoDbConfig {
     pub fn get_standalone_url(&self) -> String {
         self.standalone_url.clone()
     }
