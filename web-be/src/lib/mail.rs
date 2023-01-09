@@ -4,6 +4,7 @@ use lettre::transport::smtp::{authentication::Credentials, Error};
 use lettre::{Message, SmtpTransport, Transport};
 
 lazy_static! {
+    // SmtpTransport: will creates a new connection directly usable to send emails each time
     pub static ref MAILER: SmtpTransport = {
         let mail_config = CONFIG.get_mail_config();
         let creds = Credentials::new(mail_config.get_user_name(), mail_config.get_password());

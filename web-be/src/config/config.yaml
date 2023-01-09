@@ -1,11 +1,15 @@
 server:
-  name: "web-fe"
+  name: web-fe
   port: 3000
 
 mail:
   smtp_server: smtp.qq.com
   user_name: 549215892@qq.com
   password: jiowtgcgnuawbcae
+
+redis:
+  # redis :// [: password@] host [: port] [/ database][? [timeout=timeout[d|h|m|s|ms|us|ns]] [&database=database]]
+  standalone_url: redis://:maomao@123@192.168.9.111:6379/0
 
 mysql:
 

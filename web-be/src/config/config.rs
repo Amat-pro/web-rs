@@ -6,6 +6,7 @@ pub struct ConfigProperty {
     mail: MailConfig,
     mysql: MysqlConfig,
     mongodb: MongoDbConfig,
+    redis: RedisConfig,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -27,6 +28,11 @@ pub struct MysqlConfig {}
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct MongoDbConfig {}
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct RedisConfig {
+    standalone_url: String,
+}
+
 impl ConfigProperty {
     pub fn get_server_config(&self) -> ServerConfig {
         self.server.clone()
@@ -42,6 +48,10 @@ impl ConfigProperty {
 
     pub fn get_mail_config(&self) -> MailConfig {
         self.mail.clone()
+    }
+
+    pub fn get_redis_config(&self) -> RedisConfig {
+        self.redis.clone()
     }
 }
 
@@ -66,5 +76,11 @@ impl MailConfig {
 
     pub fn get_password(&self) -> String {
         self.password.clone()
+    }
+}
+
+impl RedisConfig {
+    pub fn get_standalone_url(&self) -> String {
+        self.standalone_url.clone()
     }
 }

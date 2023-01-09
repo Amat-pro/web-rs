@@ -1,4 +1,4 @@
-use crate::jwt::Claims;
+use crate::{jwt::Claims, lib::REDIS_CONNECTION_MANAGER};
 use axum::extract::Json;
 use serde_json::{json, Value};
 use tracing::{info, span, Level};
@@ -47,4 +47,25 @@ pub async fn protected_hello_world_handler(
         "message":"success",
         "payload":res,
     }))
+}
+
+pub async fn test_redis_cmd_handler() -> Json<Value> {
+    let r = redis::cmd("SET")
+        .arg("web-rs:test:1")
+        .arg("value")
+        .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
+        .await;
+
+    match r {
+        Ok(()) => Json(json!({
+            "code":200,
+            "message":"success",
+            "payload":"",
+        })),
+        Err(e) => Json(json!({
+            "code":1000,
+            "message":"redis command err",
+            "payload":"",
+        })),
+    }
 }
