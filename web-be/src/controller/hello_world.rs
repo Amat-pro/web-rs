@@ -152,3 +152,40 @@ struct Book {
     title: String,
     author: String,
 }
+
+pub async fn test_mysql_handler() -> Json<Value> {
+    let mysql_pool = crate::lib::MYSQL_POOL.clone();
+    let description = "desc".to_string();
+
+    let insert_r = sqlx::query!(
+        r#"
+    INSERT INTO todos ( description )
+    VALUES ( ? )
+            "#,
+        description
+    )
+    .execute(&mysql_pool)
+    .await;
+
+    match insert_r {
+        Ok(r) => {
+            info!(
+                "test mysql insert, last insert id is: {}",
+                r.last_insert_id()
+            );
+            Json(json!({
+                "code":200,
+                "message":"success",
+                "payload":"",
+            }))
+        }
+        Err(e) => {
+            warn!("test mysql insert fail, err: {}", e);
+            Json(json!({
+                "code":10000,
+                "message":"test mysql insert fail",
+                "payload":"",
+            }))
+        }
+    }
+}

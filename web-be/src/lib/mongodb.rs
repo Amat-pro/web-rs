@@ -11,6 +11,9 @@ lazy_static! {
         match client_options_r {
             Ok(mut client_options) => {
                 // can set other options here like ```client_options.app_name = Some("My App".to_string());```
+                // client_options.max_idle_time
+                // client_options.min_pool_size
+                // client_options.max_pool_size
                 client_options.app_name = Some("WEB-RS".to_string());
                 let client_r = Client::with_options(client_options);
                 match client_r {

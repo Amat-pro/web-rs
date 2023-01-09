@@ -16,6 +16,7 @@ use tokio::signal;
 async fn main() {
     // init
     init::init();
+    
 
     // build our application with a route
     let router = router::create_router();
@@ -59,4 +60,5 @@ async fn shutdown_signal() {
     }
 
     println!("signal received, starting graceful shutdown(Do Others Here!).");
+    let _ = crate::lib::MYSQL_POOL.close();
 }

@@ -22,8 +22,17 @@ pub struct MailConfig {
     password: String,
 }
 
+/// param for time.Duration: secs
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct MysqlConfig {}
+pub struct MysqlConfig {
+    url: String,
+    max_connections: u32,
+    min_connections: u32,
+    max_lifetime: u32,
+    idle_timeout: u32,
+    acquire_timeout: u32,
+    // fair: bool,
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct MongoDbConfig {
@@ -91,4 +100,28 @@ impl MongoDbConfig {
     pub fn get_standalone_url(&self) -> String {
         self.standalone_url.clone()
     }
+}
+
+impl MysqlConfig {
+    pub fn get_url(&self) -> String {
+        self.url.clone()
+    }
+    pub fn get_max_connections(&self) -> u32 {
+        self.max_connections
+    }
+    pub fn get_min_connections(&self) -> u32 {
+        self.min_connections
+    }
+    pub fn get_max_lifetime(&self) -> u32 {
+        self.max_lifetime
+    }
+    pub fn get_idle_timeout(&self) -> u32 {
+        self.idle_timeout
+    }
+    pub fn get_acquire_timeout(&self) -> u32 {
+        self.acquire_timeout
+    }
+    // pub fn get_fair(&self) -> bool {
+    //     self.fair
+    // }
 }
