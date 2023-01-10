@@ -84,7 +84,7 @@ pub async fn test_redis_cmd_handler() -> Json<Value> {
             "message":"success",
             "payload":"",
         })),
-        Err(e) => Json(json!({
+        Err(_e) => Json(json!({
             "code":1000,
             "message":"redis command err",
             "payload":"",
@@ -159,7 +159,7 @@ pub async fn test_mysql_handler() -> Json<Value> {
     let count = 1000;
     let mut sum: i64 = 0;
 
-    for i in 0..count {
+    for _i in 0..count {
         let num = test_mysql().await;
         sum += num;
     }
