@@ -16,7 +16,6 @@ use tokio::signal;
 async fn main() {
     // init
     init::init();
-    
 
     // build our application with a route
     let router = router::create_router();
@@ -31,12 +30,12 @@ async fn main() {
     );
     axum::Server::bind(&addr)
         .serve(router.into_make_service())
-        .with_graceful_shutdown(shutdown_signal())
+        .with_graceful_shutdown(graceful_shutdown())
         .await
         .unwrap();
 }
 
-async fn shutdown_signal() {
+async fn graceful_shutdown() {
     let ctrl_c = async {
         signal::ctrl_c()
             .await

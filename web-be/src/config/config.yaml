@@ -2,6 +2,10 @@ server:
   name: web-fe
   port: 3000
 
+log:
+  # style like: TRACE, DEBUG, INFO, WARN, ERROR
+  max_level: INFO
+
 mail:
   smtp_server: smtp.qq.com
   user_name: 549215892@qq.com

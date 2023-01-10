@@ -154,14 +154,36 @@ struct Book {
 }
 
 pub async fn test_mysql_handler() -> Json<Value> {
-    let mysql_pool = crate::lib::MYSQL_POOL.clone();
-    let description = "desc".to_string();
+    let _ = test_mysql().await;
 
+    let count = 1000;
+    let mut sum: i64 = 0;
+
+    for i in 0..count {
+        let num = test_mysql().await;
+        sum += num;
+    }
+
+    println!("###############################> {}", sum);
+
+    Json(json!({
+        "code":200,
+        "message":"success",
+        "payload":"",
+    }))
+}
+
+async fn test_mysql() -> i64 {
+    let mysql_pool = crate::lib::MYSQL_POOL.clone();
+
+    let time_0 = chrono::Local::now();
+
+    let description = "desc".to_string();
     let insert_r = sqlx::query!(
         r#"
-    INSERT INTO todos ( description )
-    VALUES ( ? )
-            "#,
+INSERT INTO todos ( description )
+VALUES ( ? )
+        "#,
         description
     )
     .execute(&mysql_pool)
@@ -173,19 +195,11 @@ pub async fn test_mysql_handler() -> Json<Value> {
                 "test mysql insert, last insert id is: {}",
                 r.last_insert_id()
             );
-            Json(json!({
-                "code":200,
-                "message":"success",
-                "payload":"",
-            }))
+            chrono::Local::now().timestamp_millis() - time_0.timestamp_millis()
         }
         Err(e) => {
             warn!("test mysql insert fail, err: {}", e);
-            Json(json!({
-                "code":10000,
-                "message":"test mysql insert fail",
-                "payload":"",
-            }))
+            0
         }
     }
 }

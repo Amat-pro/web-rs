@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_yaml;
 use std::env;
 use std::fs::File;
-use tracing::{info, warn};
+use tracing::{debug, info, warn};
 
 const DEFAULT_CONFIG_FILE_PATH: &'static str =
     "/Users/luzhongbo/VsCodeProjects/web-rs/web-be/src/config/config.yaml";
@@ -31,7 +31,7 @@ impl YamlConfig {
 
                 match config_r {
                     Ok(config) => {
-                        info!("init_config success, config: {:?}", config);
+                        debug!("init_config success, config: {:?}", config);
                         result = Ok(config)
                     }
                     Err(err) => {

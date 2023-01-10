@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ConfigProperty {
     server: ServerConfig,
+    log: LogConfig,
     mail: MailConfig,
     mysql: MysqlConfig,
     mongodb: MongoDbConfig,
@@ -44,9 +45,18 @@ pub struct RedisConfig {
     standalone_url: String,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct LogConfig {
+    max_level: String,
+}
+
 impl ConfigProperty {
     pub fn get_server_config(&self) -> ServerConfig {
         self.server.clone()
+    }
+
+    pub fn get_log_config(&self) -> LogConfig {
+        self.log.clone()
     }
 
     pub fn get_mysql_config(&self) -> MysqlConfig {
@@ -124,4 +134,17 @@ impl MysqlConfig {
     // pub fn get_fair(&self) -> bool {
     //     self.fair
     // }
+}
+
+impl LogConfig {
+    pub fn get_max_level(&self) -> tracing::Level {
+        match self.max_level.as_str() {
+            "TRACE" => tracing::Level::TRACE,
+            "DEBUG" => tracing::Level::DEBUG,
+            "INFO" => tracing::Level::INFO,
+            "WARN" => tracing::Level::WARN,
+            "ERROR" => tracing::Level::ERROR,
+            _ => tracing::Level::DEBUG,
+        }
+    }
 }
