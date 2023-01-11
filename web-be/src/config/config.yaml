@@ -19,7 +19,7 @@ mysql:
   # maomao maomao@123
   url: mysql://maomao:maomao@123@192.168.9.111:3306/test
   max_connections: 5
-  min_connections: 0
+  min_connections: 1
   # secs
   max_lifetime: 1200
   # secs

@@ -156,7 +156,7 @@ struct Book {
 pub async fn test_mysql_handler() -> Json<Value> {
     let _ = test_mysql().await;
 
-    let count = 1000;
+    let count = 10;
     let mut sum: i64 = 0;
 
     for _i in 0..count {
