@@ -1,6 +1,6 @@
 use crate::{
-    jwt::Claims,
     lib::{MONGODB_CLIENT, REDIS_CONNECTION_MANAGER},
+    structs::Claims,
 };
 use axum::extract::Json;
 use redis::RedisError;
@@ -14,13 +14,13 @@ pub async fn hello_world_handler(Json(payload): Json<Value>) -> Json<Value> {
     let span = span!(Level::INFO, "hello_world_handler", "trace_id: {}", 10000);
     let _enter = span.enter();
 
-    let req: crate::ao::HelloWorldAO = serde_json::from_value(payload).unwrap();
+    let req: HelloWorldAO = serde_json::from_value(payload).unwrap();
     info!("receive params, req: {:?}", req);
 
     crate::service::do_something();
 
     // response
-    let res = crate::vo::HelloWorldVO::new("desc".to_string(), 18);
+    let res = HelloWorldVO::new("desc".to_string(), 18);
 
     crate::global_response::new(crate::global_response::ERROR_CODE_DEFAULT, res)
 }
@@ -38,12 +38,12 @@ pub async fn protected_hello_world_handler(
     );
     let _enter = span.enter();
 
-    let req: crate::ao::HelloWorldAO = serde_json::from_value(payload).unwrap();
+    let req: HelloWorldAO = serde_json::from_value(payload).unwrap();
     info!("receive params, req: {:?}, claims: {:?}", req, claims);
     info!("receive params, claims: {:?}", claims);
 
     // response
-    let res = crate::vo::HelloWorldVO::new("desc".to_string(), 19);
+    let res = HelloWorldVO::new("desc".to_string(), 19);
     Json(json!({
         "code":200,
         "message":"success",
@@ -199,4 +199,21 @@ VALUES ( ? )
             0
         }
     }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+struct HelloWorldVO {
+    desc: String,
+    age: i8,
+}
+
+impl HelloWorldVO {
+    fn new(desc: String, age: i8) -> Self {
+        HelloWorldVO { desc, age }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct HelloWorldAO {
+    param: String,
 }

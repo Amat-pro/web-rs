@@ -1,10 +1,16 @@
 server:
-  name: web-fe
+  name: web-be
   port: 3000
 
 log:
   # style like: TRACE, DEBUG, INFO, WARN, ERROR
   max_level: INFO
+
+security:
+  jwt:
+    secret: my_secret
+    # milliseconds  ##30 days
+    exp: 2592000000
 
 mail:
   smtp_server: smtp.qq.com
@@ -32,3 +38,8 @@ mongodb:
   # refer: https://www.mongodb.com/docs/manual/reference/connection-string/
   # the character of '@' in pass => %40
   standalone_url: mongodb://maomao:maomao%40123@192.168.9.111:27017/Mytest
+  database: Mytest
+  # secs
+  max_idle_time: 600
+  min_pool_size: 1
+  max_pool_size: 100

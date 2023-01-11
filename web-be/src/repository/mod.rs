@@ -1,3 +1,3 @@
-mod cache;
+mod redis;
 mod mongodb;
 mod mysql;
