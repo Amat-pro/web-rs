@@ -38,7 +38,7 @@ pub async fn authorize(
             }
 
             // generate expire_time here
-            let expire_time = 1988121600;
+            let expire_time = 1673426526502;
 
             let claims = Claims::new(expire_time, "1".to_string());
             // Create the authorization token

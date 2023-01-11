@@ -1,3 +1,5 @@
+pub mod global_response;
+
 use axum::{
     async_trait,
     extract::{FromRequestParts, TypedHeader},
@@ -12,8 +14,8 @@ use serde_json::json;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
     user_info: UserInfo,
-    // expire_time: timestamp
-    expire_time: u64,
+    // expire_time: timestamp  ##this filed is must needed
+    exp: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -43,8 +45,10 @@ where
             .await
             .map_err(|_| AuthError::InvalidToken)?;
         // Decode the user data
-        let token_data =
-            crate::utils::jwt::decode_token(bearer.token()).map_err(|_| AuthError::InvalidToken)?;
+        let token_data = crate::utils::jwt::decode_token(bearer.token()).map_err(|e| {
+            println!("{}", e);
+            AuthError::InvalidToken
+        })?;
 
         Ok(token_data.claims)
     }
@@ -69,7 +73,7 @@ impl Claims {
     pub fn new(expire_time: u64, id: String) -> Self {
         Self {
             user_info: UserInfo::new(id),
-            expire_time,
+            exp: expire_time,
         }
     }
 

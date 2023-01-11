@@ -22,7 +22,7 @@ pub async fn hello_world_handler(Json(payload): Json<Value>) -> Json<Value> {
     // response
     let res = HelloWorldVO::new("desc".to_string(), 18);
 
-    crate::global_response::new(crate::global_response::ERROR_CODE_DEFAULT, res)
+    crate::structs::global_response::new(crate::structs::global_response::ERROR_CODE_DEFAULT, res)
 }
 
 // Content-Type: application/json

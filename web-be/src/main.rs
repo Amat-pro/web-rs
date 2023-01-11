@@ -1,6 +1,5 @@
 mod config;
 mod controller;
-mod global_response;
 mod init;
 mod lib;
 mod router;
