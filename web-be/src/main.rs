@@ -1,6 +1,7 @@
 mod ao;
 mod config;
 mod controller;
+mod global_response;
 mod init;
 mod jwt;
 mod lib;
