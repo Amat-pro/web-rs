@@ -1,13 +1,14 @@
 use crate::structs::AuthError;
 use axum::extract::Json;
 use axum::http::HeaderMap;
-use tracing::{debug, span, Level};
+use tracing::{debug, span, warn, Level};
 
 use crate::structs::Claims;
 use headers::HeaderValue;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AuthBody {
     access_token: String,
     token_type: String,
@@ -68,4 +69,47 @@ pub async fn authenticate_handler(headers: HeaderMap) -> Result<Json<AuthBody>, 
     debug!("authenticating end");
 
     return r;
+}
+
+pub async fn register_handler(Json(payload): Json<Value>) -> Json<Value> {
+    let req: RegisterAO = serde_json::from_value(payload).unwrap();
+    debug!("receive params, req: {:?}", req);
+
+    // todo
+    // check code and others
+
+    // encode pass
+
+    // do others
+
+    // do insert
+    let create_user_r = crate::repository::mysql::UserEntity::create(
+        req.nick_name.clone(),
+        req.email,
+        req.password,
+    )
+    .await;
+
+    // create token and return
+    match create_user_r {
+        Ok(_) => crate::structs::global_response::new(
+            crate::structs::global_response::ERROR_CODE_SUCCESS,
+            "",
+        ),
+        Err(e) => {
+            warn!("register_handler, create user err: {}", e);
+            crate::structs::global_response::new(
+                crate::structs::global_response::ERROR_CODE_ERROR,
+                "",
+            )
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct RegisterAO {
+    pub nick_name: String,
+    pub email: String,
+    pub password: String,
+    pub code: String,
 }

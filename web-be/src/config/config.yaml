@@ -4,7 +4,7 @@ server:
 
 log:
   # style like: TRACE, DEBUG, INFO, WARN, ERROR
-  max_level: INFO
+  max_level: DEBUG
 
 security:
   jwt:

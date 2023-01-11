@@ -1,7 +1,7 @@
 mod mail;
 mod mongodb;
 mod mysql;
-mod redis;
+pub mod redis;
 
 pub use mail::send_mail;
 pub use mail::MAILER;

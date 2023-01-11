@@ -5,7 +5,7 @@ use crate::{
 use axum::extract::Json;
 use redis::RedisError;
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value};
 use tracing::{info, span, warn, Level};
 
 // Content-Type: application/json
@@ -16,13 +16,25 @@ pub async fn hello_world_handler(Json(payload): Json<Value>) -> Json<Value> {
 
     let req: HelloWorldAO = serde_json::from_value(payload).unwrap();
     info!("receive params, req: {:?}", req);
+    info!(
+        "================ print current thread id: {:?}",
+        std::thread::current()
+    );
+    println_thread_id().await;
 
     crate::service::do_something();
 
     // response
     let res = HelloWorldVO::new("desc".to_string(), 18);
 
-    crate::structs::global_response::new(crate::structs::global_response::ERROR_CODE_DEFAULT, res)
+    crate::structs::global_response::new(crate::structs::global_response::ERROR_CODE_SUCCESS, res)
+}
+
+async fn println_thread_id() {
+    info!(
+        "================ print current thread id: {:?}",
+        std::thread::current()
+    );
 }
 
 // Content-Type: application/json
@@ -44,11 +56,7 @@ pub async fn protected_hello_world_handler(
 
     // response
     let res = HelloWorldVO::new("desc".to_string(), 19);
-    Json(json!({
-        "code":200,
-        "message":"success",
-        "payload":res,
-    }))
+    crate::structs::global_response::new(crate::structs::global_response::ERROR_CODE_ERROR, res)
 }
 
 pub async fn test_redis_cmd_handler() -> Json<Value> {
@@ -76,16 +84,14 @@ pub async fn test_redis_cmd_handler() -> Json<Value> {
     }
 
     match r {
-        Ok(()) => Json(json!({
-            "code":200,
-            "message":"success",
-            "payload":"",
-        })),
-        Err(_e) => Json(json!({
-            "code":1000,
-            "message":"redis command err",
-            "payload":"",
-        })),
+        Ok(()) => crate::structs::global_response::new(
+            crate::structs::global_response::ERROR_CODE_SUCCESS,
+            "",
+        ),
+        Err(_e) => crate::structs::global_response::new(
+            crate::structs::global_response::ERROR_CODE_ERROR,
+            "",
+        ),
     }
 }
 
@@ -125,21 +131,19 @@ pub async fn test_mongodb_handler() -> Json<Value> {
     // Insert the books into "mydb.books" collection, no manual conversion to BSON necessary.
     let insert_many_r = typed_collection.insert_many(books, None).await;
     match insert_many_r {
-        Ok(_) => Json(json!({
-            "code":200,
-            "message":"success",
-            "payload":"",
-        })),
+        Ok(_) => crate::structs::global_response::new(
+            crate::structs::global_response::ERROR_CODE_SUCCESS,
+            "",
+        ),
         Err(e) => {
             warn!(
                 "test_mongodb_handler, insert many to Mytest.books fail, err: {}",
                 e
             );
-            Json(json!({
-                "code":10000,
-                "message":"insert many to Mytest.books fail",
-                "payload":"",
-            }))
+            crate::structs::global_response::new(
+                crate::structs::global_response::ERROR_CODE_ERROR,
+                "",
+            )
         }
     }
 }
@@ -163,11 +167,7 @@ pub async fn test_mysql_handler() -> Json<Value> {
 
     println!("###############################> {}", sum);
 
-    Json(json!({
-        "code":200,
-        "message":"success",
-        "payload":"",
-    }))
+    crate::structs::global_response::new(crate::structs::global_response::ERROR_CODE_SUCCESS, "")
 }
 
 async fn test_mysql() -> i64 {

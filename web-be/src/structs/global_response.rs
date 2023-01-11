@@ -26,4 +26,5 @@ impl ErrorCode {
 }
 
 // definite error code like follows
-pub const ERROR_CODE_DEFAULT: ErrorCode = ErrorCode(10000 as u32, "success");
+pub const ERROR_CODE_SUCCESS: ErrorCode = ErrorCode(10000 as u32, "success");
+pub const ERROR_CODE_ERROR: ErrorCode = ErrorCode(10001 as u32, "error");

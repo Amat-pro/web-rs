@@ -2,6 +2,7 @@ mod config;
 mod controller;
 mod init;
 mod lib;
+mod repository;
 mod router;
 mod service;
 mod structs;
