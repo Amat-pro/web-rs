@@ -1,8 +1,9 @@
 use axum::extract::Json;
 use serde::{Deserialize, Serialize};
-use serde_json::{Value};
+use serde_json::Value;
 use tracing::warn;
 
+// todo router
 pub async fn send_mail_code_handler(Json(payload): Json<Value>) -> Json<Value> {
     let req: SendMailCodeAO = serde_json::from_value(payload).unwrap();
 
@@ -11,7 +12,7 @@ pub async fn send_mail_code_handler(Json(payload): Json<Value>) -> Json<Value> {
     if to.is_empty() {
         return crate::structs::global_response::new(
             crate::structs::global_response::ERROR_CODE_ERROR,
-            "",
+            SendMailCodeVO::new(),
         );
     }
     // check others
@@ -33,13 +34,13 @@ pub async fn send_mail_code_handler(Json(payload): Json<Value>) -> Json<Value> {
             match send_mail_r {
                 Ok(_) => crate::structs::global_response::new(
                     crate::structs::global_response::ERROR_CODE_SUCCESS,
-                    "",
+                    SendMailCodeVO::new(),
                 ),
                 Err(e) => {
                     warn!("send mail to {} fail, err: {}", to, e);
                     crate::structs::global_response::new(
                         crate::structs::global_response::ERROR_CODE_ERROR,
-                        "",
+                        SendMailCodeVO::new(),
                     )
                 }
             }
@@ -48,19 +49,28 @@ pub async fn send_mail_code_handler(Json(payload): Json<Value>) -> Json<Value> {
             warn!("send_mail_code_handler, set mail code err: {}", e);
             crate::structs::global_response::new(
                 crate::structs::global_response::ERROR_CODE_ERROR,
-                "",
+                SendMailCodeVO::new(),
             )
         }
     }
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-pub struct SendMailCodeAO {
+struct SendMailCodeAO {
     to: String,
 }
 
 impl SendMailCodeAO {
     fn get_to(&self) -> String {
         self.to.clone()
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+struct SendMailCodeVO {}
+
+impl SendMailCodeVO {
+    fn new() -> Self {
+        Self {}
     }
 }

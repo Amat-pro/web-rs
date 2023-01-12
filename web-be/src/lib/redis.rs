@@ -35,18 +35,3 @@ pub async fn pexpire(key: &String, expire: u64) -> RedisResult<()> {
         .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
         .await
 }
-
-// todo use Trans ???
-pub async fn set_and_pexpire(key: &String, value: &String, expire: u64) -> RedisResult<()> {
-    redis::cmd("SET")
-        .arg(key)
-        .arg(value)
-        .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
-        .await?;
-
-    redis::cmd("PEXPIRE")
-        .arg(key)
-        .arg(expire)
-        .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
-        .await
-}

@@ -71,11 +71,11 @@ pub async fn authenticate_handler(headers: HeaderMap) -> Result<Json<AuthBody>, 
     return r;
 }
 
+// todo router
 pub async fn register_handler(Json(payload): Json<Value>) -> Json<Value> {
     let req: RegisterAO = serde_json::from_value(payload).unwrap();
     debug!("receive params, req: {:?}", req);
 
-    // todo
     // check code and others
 
     // encode pass
@@ -94,22 +94,79 @@ pub async fn register_handler(Json(payload): Json<Value>) -> Json<Value> {
     match create_user_r {
         Ok(_) => crate::structs::global_response::new(
             crate::structs::global_response::ERROR_CODE_SUCCESS,
-            "",
+            RegisterVO::new(),
         ),
         Err(e) => {
             warn!("register_handler, create user err: {}", e);
             crate::structs::global_response::new(
                 crate::structs::global_response::ERROR_CODE_ERROR,
-                "",
+                RegisterVO::new(),
             )
         }
     }
 }
 
+// todo router
+pub async fn login_handler(Json(_payload): Json<Value>) -> Json<Value> {
+    crate::structs::global_response::new(
+        crate::structs::global_response::ERROR_CODE_SUCCESS,
+        LoginVO::new(),
+    )
+}
+
+// todo router
+pub async fn change_pass_handler(_claims: Claims, Json(_payload): Json<Value>) -> Json<Value> {
+    crate::structs::global_response::new(
+        crate::structs::global_response::ERROR_CODE_SUCCESS,
+        PassChangeVO::new(),
+    )
+}
+
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-pub struct RegisterAO {
+struct RegisterAO {
     pub nick_name: String,
     pub email: String,
     pub password: String,
     pub code: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+struct RegisterVO {}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+struct LoginAO {
+    pub email: Option<String>,
+    pub nick_name: Option<String>,
+    pub password: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+struct LoginVO {}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+struct PassChangeAO {
+    pub email: String,
+    pub new_pass: String,
+    pub code: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+struct PassChangeVO {}
+
+impl RegisterVO {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl LoginVO {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl PassChangeVO {
+    pub fn new() -> Self {
+        Self {}
+    }
 }

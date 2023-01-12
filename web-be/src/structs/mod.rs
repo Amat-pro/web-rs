@@ -23,6 +23,21 @@ pub struct UserInfo {
     id: String,
 }
 
+#[derive(Serialize, Debug)]
+pub struct Page<T: Serialize> {
+    pub size: usize,
+    pub current: usize,
+    pub total: usize,
+    pub data: T,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+
+pub struct PageParam {
+    pub size: usize,
+    pub current: usize,
+}
+
 #[derive(Debug)]
 pub enum AuthError {
     WrongCredentials,
@@ -85,5 +100,14 @@ impl Claims {
 impl UserInfo {
     pub fn new(id: String) -> Self {
         Self { id }
+    }
+}
+
+pub fn new_page<T: Serialize>(size: usize, current: usize, total: usize, data: T) -> Page<T> {
+    Page {
+        size,
+        current,
+        total,
+        data,
     }
 }

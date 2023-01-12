@@ -214,6 +214,6 @@ impl HelloWorldVO {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-pub struct HelloWorldAO {
+struct HelloWorldAO {
     param: String,
 }
