@@ -1,14 +1,12 @@
-mod ao;
 mod config;
 mod controller;
 mod init;
-mod jwt;
 mod lib;
+mod repository;
 mod router;
 mod service;
+mod structs;
 mod utils;
-mod vo;
-
 use std::net::SocketAddr;
 use tokio::signal;
 
@@ -60,4 +58,15 @@ async fn graceful_shutdown() {
 
     println!("signal received, starting graceful shutdown(Do Others Here!).");
     let _ = crate::lib::MYSQL_POOL.close();
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test() {
+        // 4294967295
+        println!("{}", std::u32::MAX);
+        // 18446744073709551615
+        println!("{}", std::u64::MAX);
+    }
 }

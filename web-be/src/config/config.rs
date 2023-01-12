@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 pub struct ConfigProperty {
     server: ServerConfig,
     log: LogConfig,
+    security: SecurityConfig,
     mail: MailConfig,
     mysql: MysqlConfig,
     mongodb: MongoDbConfig,
@@ -38,6 +39,10 @@ pub struct MysqlConfig {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct MongoDbConfig {
     standalone_url: String,
+    database: String,
+    max_idle_time: u32,
+    min_pool_size: u32,
+    max_pool_size: u32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -50,6 +55,18 @@ pub struct LogConfig {
     max_level: String,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SecurityConfig {
+    jwt: JwtConfig,
+}
+
+/// param for time.Duration: milliseconds
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct JwtConfig {
+    secret: String,
+    exp: u64,
+}
+
 impl ConfigProperty {
     pub fn get_server_config(&self) -> ServerConfig {
         self.server.clone()
@@ -57,6 +74,10 @@ impl ConfigProperty {
 
     pub fn get_log_config(&self) -> LogConfig {
         self.log.clone()
+    }
+
+    pub fn get_security_config(&self) -> SecurityConfig {
+        self.security.clone()
     }
 
     pub fn get_mysql_config(&self) -> MysqlConfig {
@@ -110,6 +131,18 @@ impl MongoDbConfig {
     pub fn get_standalone_url(&self) -> String {
         self.standalone_url.clone()
     }
+    pub fn get_database(&self) -> String {
+        self.database.clone()
+    }
+    pub fn get_max_idle_time(&self) -> u32 {
+        self.max_idle_time
+    }
+    pub fn get_min_pool_size(&self) -> u32 {
+        self.min_pool_size
+    }
+    pub fn get_max_pool_size(&self) -> u32 {
+        self.max_pool_size
+    }
 }
 
 impl MysqlConfig {
@@ -134,6 +167,21 @@ impl MysqlConfig {
     // pub fn get_fair(&self) -> bool {
     //     self.fair
     // }
+}
+
+impl SecurityConfig {
+    pub fn get_jwt_config(&self) -> JwtConfig {
+        self.jwt.clone()
+    }
+}
+
+impl JwtConfig {
+    pub fn get_secret(&self) -> String {
+        self.secret.clone()
+    }
+    pub fn get_exp(&self) -> u64 {
+        self.exp
+    }
 }
 
 impl LogConfig {

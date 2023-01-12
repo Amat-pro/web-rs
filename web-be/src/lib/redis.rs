@@ -2,6 +2,7 @@ use crate::config::CONFIG;
 use futures::executor::block_on;
 use lazy_static::lazy_static;
 use redis::aio::ConnectionManager;
+use redis::RedisResult;
 
 lazy_static! {
     pub static ref REDIS_CONNECTION_MANAGER: ConnectionManager = {
@@ -17,4 +18,35 @@ lazy_static! {
             }
         }
     };
+}
+
+pub async fn set(key: &String, value: &String) -> RedisResult<()> {
+    redis::cmd("SET")
+        .arg(key)
+        .arg(value)
+        .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
+        .await
+}
+
+pub async fn pexpire(key: &String, expire: u64) -> RedisResult<()> {
+    redis::cmd("PEXPIRE")
+        .arg(key)
+        .arg(expire)
+        .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
+        .await
+}
+
+// todo use Trans ???
+pub async fn set_and_pexpire(key: &String, value: &String, expire: u64) -> RedisResult<()> {
+    redis::cmd("SET")
+        .arg(key)
+        .arg(value)
+        .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
+        .await?;
+
+    redis::cmd("PEXPIRE")
+        .arg(key)
+        .arg(expire)
+        .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
+        .await
 }
