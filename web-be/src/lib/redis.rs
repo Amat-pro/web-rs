@@ -35,3 +35,79 @@ pub async fn pexpire(key: &String, expire: u64) -> RedisResult<()> {
         .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
         .await
 }
+
+pub async fn set_with_secs_expire(key: &String, value: &String, secs: usize) -> RedisResult<()> {
+    redis::cmd("SET")
+        .arg(key)
+        .arg(value)
+        .arg("EX")
+        .arg(secs)
+        .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
+        .await
+}
+
+pub async fn set_with_millis_expire(
+    key: &String,
+    value: &String,
+    millis: usize,
+) -> RedisResult<()> {
+    redis::cmd("SET")
+        .arg(key)
+        .arg(value)
+        .arg("PX")
+        .arg(millis)
+        .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
+        .await
+}
+
+pub async fn set_nx_with_secs_expire(key: &String, value: &String, secs: usize) -> RedisResult<()> {
+    redis::cmd("SET")
+        .arg(key)
+        .arg(value)
+        .arg("EX")
+        .arg(secs)
+        .arg("NX")
+        .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
+        .await
+}
+
+pub async fn set_nx_with_millis_expire(
+    key: &String,
+    value: &String,
+    millis: usize,
+) -> RedisResult<()> {
+    redis::cmd("SET")
+        .arg(key)
+        .arg(value)
+        .arg("PX")
+        .arg(millis)
+        .arg("NX")
+        .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
+        .await
+}
+
+pub async fn set_xx_with_secs_expire(key: &String, value: &String, secs: usize) -> RedisResult<()> {
+    redis::cmd("SET")
+        .arg(key)
+        .arg(value)
+        .arg("EX")
+        .arg(secs)
+        .arg("XX")
+        .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
+        .await
+}
+
+pub async fn set_xx_with_millis_expire(
+    key: &String,
+    value: &String,
+    millis: usize,
+) -> RedisResult<()> {
+    redis::cmd("SET")
+        .arg(key)
+        .arg(value)
+        .arg("PX")
+        .arg(millis)
+        .arg("XX")
+        .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
+        .await
+}

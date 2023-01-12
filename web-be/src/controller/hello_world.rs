@@ -5,7 +5,7 @@ use crate::{
 use axum::extract::Json;
 use redis::RedisError;
 use serde::{Deserialize, Serialize};
-use serde_json::{Value};
+use serde_json::Value;
 use tracing::{info, span, warn, Level};
 
 // Content-Type: application/json
@@ -82,6 +82,45 @@ pub async fn test_redis_cmd_handler() -> Json<Value> {
             warn!("test_redis_cmd_handler, get web-rs:test:1 err: {}", e);
         }
     }
+
+    // ==========================================================================================
+    let r3: redis::RedisResult<()> = redis::cmd("SET")
+        .arg("key---6")
+        .arg("value---1")
+        .arg("EX")
+        .arg(300)
+        .arg("NX")
+        .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
+        .await;
+    match r3 {
+        Ok(_ok) => {
+            // do
+            println!("==============> ok ");
+        }
+        Err(e) => {
+            println!("==============> err {}", e);
+        }
+    }
+
+    let r3: redis::RedisResult<()> = redis::cmd("SET")
+        .arg("key---6")
+        .arg("value---1")
+        .arg("EX")
+        .arg(300)
+        .arg("NX")
+        .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
+        .await;
+    match r3 {
+        Ok(_ok) => {
+            // do
+            println!("==============> ok");
+        }
+        Err(e) => {
+            println!("==============> err {}", e);
+        }
+    }
+
+    // ==========================================================================================
 
     match r {
         Ok(()) => crate::structs::global_response::new(
