@@ -15,7 +15,7 @@ security:
 mail:
   smtp_server: smtp.qq.com
   user_name: 549215892@qq.com
-  password: jiowtgcgnuawbcae
+  password: sjiowtgcgnuawbcae
 
 redis:
   # redis :// [: password@] host [: port] [/ database][? [timeout=timeout[d|h|m|s|ms|us|ns]] [&database=database]]
