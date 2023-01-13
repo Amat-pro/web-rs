@@ -1,9 +1,12 @@
-use redis::RedisResult;
+use redis::{RedisResult, Value};
 use tracing::debug;
 
 const AUTH_PREFIX: &'static str = "auth";
 
-pub async fn set_email_code_with_default_expire(code: &String, mail: &String) -> RedisResult<()> {
+pub async fn set_email_code_with_default_expire(
+    code: &String,
+    mail: &String,
+) -> RedisResult<Value> {
     debug!(
         "set_email_code_with_default_expire, code: {}, mail: {}",
         code, mail
@@ -12,9 +15,7 @@ pub async fn set_email_code_with_default_expire(code: &String, mail: &String) ->
 
     debug!("set_email_code_with_default_expire, key: {}", key);
 
-    crate::lib::redis::set(&key, &code).await?;
-
-    crate::lib::redis::pexpire(&key, 120000 as u64).await
+    crate::lib::redis::set_nx_with_secs_expire(&key, code, 120).await
 }
 
 fn build_email_code_key(mail: &String) -> String {

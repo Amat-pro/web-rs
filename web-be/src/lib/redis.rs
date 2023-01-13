@@ -20,7 +20,7 @@ lazy_static! {
     };
 }
 
-pub async fn set(key: &String, value: &String) -> RedisResult<()> {
+pub async fn set(key: &String, value: &String) -> RedisResult<redis::Value> {
     redis::cmd("SET")
         .arg(key)
         .arg(value)
@@ -28,7 +28,7 @@ pub async fn set(key: &String, value: &String) -> RedisResult<()> {
         .await
 }
 
-pub async fn pexpire(key: &String, expire: u64) -> RedisResult<()> {
+pub async fn pexpire(key: &String, expire: u64) -> RedisResult<redis::Value> {
     redis::cmd("PEXPIRE")
         .arg(key)
         .arg(expire)
@@ -36,7 +36,11 @@ pub async fn pexpire(key: &String, expire: u64) -> RedisResult<()> {
         .await
 }
 
-pub async fn set_with_secs_expire(key: &String, value: &String, secs: usize) -> RedisResult<()> {
+pub async fn set_with_secs_expire(
+    key: &String,
+    value: &String,
+    secs: usize,
+) -> RedisResult<(redis::Value)> {
     redis::cmd("SET")
         .arg(key)
         .arg(value)
@@ -50,7 +54,7 @@ pub async fn set_with_millis_expire(
     key: &String,
     value: &String,
     millis: usize,
-) -> RedisResult<()> {
+) -> RedisResult<redis::Value> {
     redis::cmd("SET")
         .arg(key)
         .arg(value)
@@ -60,7 +64,11 @@ pub async fn set_with_millis_expire(
         .await
 }
 
-pub async fn set_nx_with_secs_expire(key: &String, value: &String, secs: usize) -> RedisResult<()> {
+pub async fn set_nx_with_secs_expire(
+    key: &String,
+    value: &String,
+    secs: usize,
+) -> RedisResult<redis::Value> {
     redis::cmd("SET")
         .arg(key)
         .arg(value)
@@ -75,7 +83,7 @@ pub async fn set_nx_with_millis_expire(
     key: &String,
     value: &String,
     millis: usize,
-) -> RedisResult<()> {
+) -> RedisResult<redis::Value> {
     redis::cmd("SET")
         .arg(key)
         .arg(value)
@@ -86,7 +94,11 @@ pub async fn set_nx_with_millis_expire(
         .await
 }
 
-pub async fn set_xx_with_secs_expire(key: &String, value: &String, secs: usize) -> RedisResult<()> {
+pub async fn set_xx_with_secs_expire(
+    key: &String,
+    value: &String,
+    secs: usize,
+) -> RedisResult<redis::Value> {
     redis::cmd("SET")
         .arg(key)
         .arg(value)
@@ -101,7 +113,7 @@ pub async fn set_xx_with_millis_expire(
     key: &String,
     value: &String,
     millis: usize,
-) -> RedisResult<()> {
+) -> RedisResult<redis::Value> {
     redis::cmd("SET")
         .arg(key)
         .arg(value)
@@ -110,4 +122,31 @@ pub async fn set_xx_with_millis_expire(
         .arg("XX")
         .query_async(&mut REDIS_CONNECTION_MANAGER.clone())
         .await
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::set;
+    use tokio::runtime;
+
+    #[test]
+    fn test_set() {
+        let rt = runtime::Runtime::new().unwrap();
+
+        let set_r = rt.block_on(set(&"test-set".to_string(), &"".to_string()));
+        match set_r {
+            Ok(v) => match v {
+                redis::Value::Int(i) => println!("{}", i),
+                redis::Value::Data(_) => println!("Data"),
+                redis::Value::Bulk(_) => println!("Bulk"),
+                redis::Value::Status(_) => println!("Status"),
+                redis::Value::Nil => println!("Nil"),
+                redis::Value::Okay => println!("Ok"),
+            },
+            Err(e) => {
+                println!("err: {}", e);
+            }
+        }
+    }
 }
