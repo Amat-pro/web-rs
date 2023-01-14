@@ -1,7 +1,8 @@
 use crate::config::CONFIG;
 use crate::repository::mysql::UserEntity;
 use crate::structs::{
-    global_response, Claims, LoginAO, LoginVO, RegisterAO, RegisterVO, SendMailCodeVO, UserInfo,
+    global_response, Claims, LoginAO, LoginVO, PassChangeAO, PassChangeVO, RegisterAO, RegisterVO,
+    SendMailCodeVO, UserInfo,
 };
 use axum::extract::Json;
 use serde_json::Value;
@@ -34,7 +35,7 @@ pub async fn send_email_with_default_limit(mail_type: String, to: &String) -> Js
         redis::Value::Okay => {
             let code = crate::utils::rand::generate_numbers(6);
 
-            let key = generate_email_register_code_key(mail_type, to);
+            let key = generate_email_code_key(mail_type, to);
 
             let set_r = crate::lib::redis::set_with_secs_expire(&key, &code, 5 * 60).await;
             if set_r.is_err() {
@@ -77,7 +78,7 @@ pub async fn send_email_with_default_limit(mail_type: String, to: &String) -> Js
 #[tracing::instrument]
 pub async fn register_user(register_info: &RegisterAO) -> Json<Value> {
     // check code
-    let check_code_r = check_email_register_code(
+    let check_code_r = check_email_code(
         "register".to_string(),
         &register_info.email,
         &register_info.code,
@@ -245,7 +246,53 @@ pub async fn login(register_info: &LoginAO) -> Json<Value> {
     global_response::new(global_response::ERROR_CODE_PASSWORD_INVALID, LoginVO::new())
 }
 
-fn generate_email_register_code_key(mail_type: String, to: &String) -> String {
+#[tracing::instrument]
+pub async fn change_pass(register_info: &PassChangeAO) -> Json<Value> {
+    // check code
+    let check_code_r = check_email_code(
+        "change-pass".to_string(),
+        &register_info.email,
+        &register_info.code,
+    )
+    .await;
+    if check_code_r.is_err() {
+        warn!(
+            "change_pass, check code err: {}",
+            check_code_r.err().unwrap()
+        );
+        return global_response::new(
+            global_response::ERROR_CODE_SERVER_ERROR,
+            PassChangeVO::new(),
+        );
+    }
+
+    if !check_code_r.unwrap() {
+        return global_response::new(
+            global_response::ERROR_CODE_EMAIL_CODE_INVALID,
+            RegisterVO::new(),
+        );
+    }
+
+    // update
+    let update_r = crate::repository::mysql::UserEntity::update_pass_by_email(
+        &register_info.email,
+        &register_info.new_pass,
+    )
+    .await;
+
+    match update_r {
+        Ok(()) => global_response::new(global_response::ERROR_CODE_SUCCESS, PassChangeVO::new()),
+        Err(e) => {
+            warn!("change_pass, update err: {}", e);
+            global_response::new(
+                global_response::ERROR_CODE_SERVER_ERROR,
+                PassChangeVO::new(),
+            )
+        }
+    }
+}
+
+fn generate_email_code_key(mail_type: String, to: &String) -> String {
     format!(
         "{}:{}:email-to:{}:{}-code",
         crate::lib::redis::REDIS_PREFIX,
@@ -255,12 +302,12 @@ fn generate_email_register_code_key(mail_type: String, to: &String) -> String {
     )
 }
 
-async fn check_email_register_code(
+async fn check_email_code(
     mail_type: String,
     email: &String,
     code: &String,
 ) -> Result<bool, String> {
-    let key = generate_email_register_code_key(mail_type, email);
+    let key = generate_email_code_key(mail_type, email);
 
     let get_r = crate::lib::redis::get(&key).await;
 

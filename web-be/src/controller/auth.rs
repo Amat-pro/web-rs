@@ -5,7 +5,9 @@ use tracing::{debug, span, Level};
 
 use crate::structs::global_response;
 use crate::structs::Claims;
-use crate::structs::{LoginAO, LoginVO, PassChangeVO, RegisterAO, RegisterVO, UserInfo};
+use crate::structs::{
+    LoginAO, LoginVO, PassChangeAO, PassChangeVO, RegisterAO, RegisterVO, UserInfo,
+};
 use headers::HeaderValue;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -40,12 +42,26 @@ pub async fn login_handler(Json(payload): Json<Value>) -> Json<Value> {
     crate::service::auth::login(&req).await
 }
 
-// todo router
-pub async fn change_pass_handler(_claims: Claims, Json(_payload): Json<Value>) -> Json<Value> {
-    crate::structs::global_response::new(
-        crate::structs::global_response::ERROR_CODE_SUCCESS,
-        PassChangeVO::new(),
-    )
+#[tracing::instrument]
+pub async fn change_pass_handler(claims: Claims, Json(payload): Json<Value>) -> Json<Value> {
+    let req: PassChangeAO = serde_json::from_value(payload).unwrap();
+    debug!("receive params, req: {:?}", req);
+
+    if req.email.is_empty() || req.new_pass.is_empty() || req.code.is_empty() {
+        return global_response::new(
+            global_response::ERROR_CODE_PARAM_INVALID,
+            PassChangeVO::new(),
+        );
+    }
+
+    if !claims.user_info.email.eq(&req.email) {
+        return global_response::new(
+            global_response::ERROR_CODE_PARAM_INVALID,
+            PassChangeVO::new(),
+        );
+    }
+
+    crate::service::auth::change_pass(&req).await
 }
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -95,6 +95,27 @@ impl UserEntity {
             Err(e) => Err(e),
         }
     }
+
+    pub async fn update_pass_by_email(email: &String, pass: &String) -> Result<(), Error> {
+        let mysql_pool = crate::lib::MYSQL_POOL.clone();
+
+        let timestamp_millis = chrono::Local::now().timestamp_millis();
+        let update_r = sqlx::query!(
+            r#"
+            UPDATE `user` SET password = ?, update_time = ? WHERE email = ?
+            "#,
+            pass,
+            timestamp_millis,
+            email,
+        )
+        .execute(&mysql_pool)
+        .await;
+
+        match update_r {
+            Ok(_) => Ok(()),
+            Err(e) => Err(e),
+        }
+    }
 }
 
 #[cfg(test)]
