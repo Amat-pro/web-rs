@@ -1,7 +1,7 @@
 use crate::structs::AuthError;
 use axum::extract::Json;
 use axum::http::HeaderMap;
-use tracing::{debug, span, Level};
+use tracing::{debug, info, span, Level};
 
 use crate::structs::global_response;
 use crate::structs::Claims;
@@ -13,7 +13,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 #[tracing::instrument]
-pub async fn register_handler(Json(payload): Json<Value>) -> Json<Value> {
+pub async fn register_handler(headers: HeaderMap, Json(payload): Json<Value>) -> Json<Value> {
+    let request_id = super::get_trace_id_from_header(&headers);
+    info!("register_handler enter, trace_id: {:?}", request_id);
+
     let req: RegisterAO = serde_json::from_value(payload).unwrap();
     debug!("receive params, req: {:?}", req);
 
@@ -31,7 +34,10 @@ pub async fn register_handler(Json(payload): Json<Value>) -> Json<Value> {
 }
 
 #[tracing::instrument]
-pub async fn login_handler(Json(payload): Json<Value>) -> Json<Value> {
+pub async fn login_handler(headers: HeaderMap, Json(payload): Json<Value>) -> Json<Value> {
+    let request_id = super::get_trace_id_from_header(&headers);
+    info!("login_handler enter, trace_id: {:?}", request_id);
+
     let req: LoginAO = serde_json::from_value(payload).unwrap();
     debug!("receive params, req: {:?}", req);
 
@@ -43,7 +49,14 @@ pub async fn login_handler(Json(payload): Json<Value>) -> Json<Value> {
 }
 
 #[tracing::instrument]
-pub async fn change_pass_handler(claims: Claims, Json(payload): Json<Value>) -> Json<Value> {
+pub async fn change_pass_handler(
+    headers: HeaderMap,
+    claims: Claims,
+    Json(payload): Json<Value>,
+) -> Json<Value> {
+    let request_id = super::get_trace_id_from_header(&headers);
+    info!("change_pass_handler enter, trace_id: {:?}", request_id);
+
     let req: PassChangeAO = serde_json::from_value(payload).unwrap();
     debug!("receive params, req: {:?}", req);
 
