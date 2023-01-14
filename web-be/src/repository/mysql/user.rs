@@ -58,19 +58,19 @@ impl UserEntity {
         }
     }
 
-    pub async fn find_pass_by_email(email: String) -> Result<String, Error> {
+    pub async fn find_user_by_email(email: &String) -> Result<UserEntity, Error> {
         let mysql_pool = crate::lib::MYSQL_POOL.clone();
 
         let query_r = sqlx::query_as!(
             UserEntity,
-            "SELECT * FROM `user` where email = ? AND is_delete = 0",
+            "SELECT * FROM `user` where email = ? AND is_delete = 0 LIMIT 1",
             email
         )
         .fetch_one(&mysql_pool)
         .await;
 
         match query_r {
-            Ok(entity) => Ok(entity.password.clone()),
+            Ok(entity) => Ok(entity),
             Err(e) => Err(e),
         }
     }
@@ -103,14 +103,14 @@ mod tests {
     use tokio::runtime;
 
     #[test]
-    fn test_find_pass_by_email() {
+    fn test_find_user_by_email() {
         let rt = runtime::Runtime::new().unwrap();
-        let find_r = rt.block_on(UserEntity::find_pass_by_email(
-            "2892798998@qq.com".to_string(),
+        let find_r = rt.block_on(UserEntity::find_user_by_email(
+            &"2892798998@qq.com".to_string(),
         ));
         match find_r {
-            Ok(pass) => {
-                println!("pass: {}", pass);
+            Ok(user) => {
+                println!("user: {:?}", user);
             }
             Err(err) => {
                 println!("err: {}", err);

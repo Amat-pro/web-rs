@@ -1,16 +1,19 @@
 use crate::config::CONFIG;
 use crate::repository::mysql::UserEntity;
-use crate::structs::{global_response, Claims, RegisterAO, RegisterVO, SendMailCodeVO, UserInfo};
+use crate::structs::{
+    global_response, Claims, LoginAO, LoginVO, RegisterAO, RegisterVO, SendMailCodeVO, UserInfo,
+};
 use axum::extract::Json;
 use serde_json::Value;
 use tracing::{info, warn};
 
 // #[tracing::instrument]
-pub async fn send_email_with_default_limit(to: &String) -> Json<Value> {
+pub async fn send_email_with_default_limit(mail_type: String, to: &String) -> Json<Value> {
     let key = format!(
-        "{}:{}:email-to:{}",
+        "{}:{}:email:{}:to:{}",
         crate::lib::redis::REDIS_PREFIX,
         crate::lib::redis::AUTH_PREFIX,
+        mail_type,
         to
     );
 
@@ -31,7 +34,7 @@ pub async fn send_email_with_default_limit(to: &String) -> Json<Value> {
         redis::Value::Okay => {
             let code = crate::utils::rand::generate_numbers(6);
 
-            let key = generate_email_code_key(to);
+            let key = generate_email_register_code_key(mail_type, to);
 
             let set_r = crate::lib::redis::set_with_secs_expire(&key, &code, 5 * 60).await;
             if set_r.is_err() {
@@ -74,7 +77,12 @@ pub async fn send_email_with_default_limit(to: &String) -> Json<Value> {
 #[tracing::instrument]
 pub async fn register_user(register_info: &RegisterAO) -> Json<Value> {
     // check code
-    let check_code_r = check_email_code(&register_info.email, &register_info.code).await;
+    let check_code_r = check_email_register_code(
+        "register".to_string(),
+        &register_info.email,
+        &register_info.code,
+    )
+    .await;
     if check_code_r.is_err() {
         warn!(
             "register_user, check code err: {}",
@@ -99,7 +107,7 @@ pub async fn register_user(register_info: &RegisterAO) -> Json<Value> {
 
     if exist_user_r.is_ok() {
         let exist_user = exist_user_r.unwrap();
-        if exist_user.email == register_info.email {
+        if exist_user.email.eq(&register_info.email) {
             return global_response::new(
                 global_response::ERROR_CODE_REGISTER_ERR_EMAIL_REPEATED,
                 RegisterVO::new(),
@@ -176,17 +184,83 @@ pub async fn register_user(register_info: &RegisterAO) -> Json<Value> {
     }
 }
 
-fn generate_email_code_key(to: &String) -> String {
+#[tracing::instrument]
+pub async fn login(register_info: &LoginAO) -> Json<Value> {
+    let LoginAO { email, password } = register_info;
+
+    let user_r = crate::repository::mysql::UserEntity::find_user_by_email(&email).await;
+    if user_r.is_err() {
+        match user_r.err().unwrap() {
+            sqlx::Error::RowNotFound => {
+                return global_response::new(
+                    global_response::ERROR_CODE_NO_USER_FOUND,
+                    LoginVO::new(),
+                );
+            }
+            _others => {
+                warn!("login, find user err: {}", _others);
+                return global_response::new(
+                    global_response::ERROR_CODE_SERVER_ERROR,
+                    LoginVO::new(),
+                );
+            }
+        }
+    }
+
+    let entity = user_r.unwrap();
+    if entity.password.eq(password) {
+        // token
+        let mut u = UserInfo::new();
+        let UserEntity {
+            id,
+            email,
+            nick_name,
+            ..
+        } = entity;
+        u.id = id.to_string();
+        u.email = email.clone();
+        u.nick_name = nick_name.clone();
+
+        let expire = chrono::Local::now().timestamp_millis() as u64
+            + CONFIG
+                .clone()
+                .get_security_config()
+                .get_jwt_config()
+                .get_exp();
+
+        let token = crate::utils::jwt::generate_token(&Claims::new(expire, u)).unwrap();
+
+        let mut vo = LoginVO::new();
+        vo.id = id.to_string();
+        vo.email = email.clone();
+        vo.nick_name = nick_name.clone();
+
+        vo.token_type = "Bearer".to_string();
+        vo.access_token = token;
+        vo.expire_time = expire;
+
+        return global_response::new(global_response::ERROR_CODE_SUCCESS, vo);
+    }
+
+    global_response::new(global_response::ERROR_CODE_PASSWORD_INVALID, LoginVO::new())
+}
+
+fn generate_email_register_code_key(mail_type: String, to: &String) -> String {
     format!(
-        "{}:{}:email-to:{}:code",
+        "{}:{}:email-to:{}:{}-code",
         crate::lib::redis::REDIS_PREFIX,
         crate::lib::redis::AUTH_PREFIX,
-        to
+        to,
+        mail_type
     )
 }
 
-async fn check_email_code(email: &String, code: &String) -> Result<bool, String> {
-    let key = generate_email_code_key(email);
+async fn check_email_register_code(
+    mail_type: String,
+    email: &String,
+    code: &String,
+) -> Result<bool, String> {
+    let key = generate_email_register_code_key(mail_type, email);
 
     let get_r = crate::lib::redis::get(&key).await;
 

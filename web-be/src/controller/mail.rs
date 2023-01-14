@@ -14,6 +14,7 @@ pub async fn send_mail_code_handler(headers: HeaderMap, Json(payload): Json<Valu
     let req: SendMailCodeAO = serde_json::from_value(payload).unwrap();
 
     let to = req.get_to();
+    let mail_type = req.get_mail_type();
     // check param
     if to.is_empty() {
         return crate::structs::global_response::new(
@@ -22,7 +23,7 @@ pub async fn send_mail_code_handler(headers: HeaderMap, Json(payload): Json<Valu
         );
     }
 
-    crate::service::auth::send_email_with_default_limit(&to)
+    crate::service::auth::send_email_with_default_limit(mail_type, &to)
         .instrument(span.clone())
         .await
 

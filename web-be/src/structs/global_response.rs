@@ -38,3 +38,6 @@ pub const ERROR_CODE_REGISTER_ERR_EMAIL_REPEATED: ErrorCode =
 pub const ERROR_CODE_REGISTER_ERR_NICKNAME_REPEATED: ErrorCode =
     ErrorCode(20003 as u32, "nick name repeated");
 pub const ERROR_CODE_EMAIL_CODE_INVALID: ErrorCode = ErrorCode(20004 as u32, "email code invalid");
+pub const ERROR_CODE_NO_USER_FOUND: ErrorCode =
+    ErrorCode(20005 as u32, "no user found, please register first");
+pub const ERROR_CODE_PASSWORD_INVALID: ErrorCode = ErrorCode(20005 as u32, "password invalid");

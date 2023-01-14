@@ -15,6 +15,8 @@ pub async fn register_handler(Json(payload): Json<Value>) -> Json<Value> {
     let req: RegisterAO = serde_json::from_value(payload).unwrap();
     debug!("receive params, req: {:?}", req);
 
+    // should encrypt pass
+
     if req.email.is_empty()
         || req.nick_name.is_empty()
         || req.password.is_empty()
@@ -26,15 +28,16 @@ pub async fn register_handler(Json(payload): Json<Value>) -> Json<Value> {
     crate::service::auth::register_user(&req).await
 }
 
-// todo router
+#[tracing::instrument]
 pub async fn login_handler(Json(payload): Json<Value>) -> Json<Value> {
     let req: LoginAO = serde_json::from_value(payload).unwrap();
     debug!("receive params, req: {:?}", req);
 
-    crate::structs::global_response::new(
-        crate::structs::global_response::ERROR_CODE_SUCCESS,
-        LoginVO::new(),
-    )
+    if req.email.is_empty() || req.password.is_empty() {
+        return global_response::new(global_response::ERROR_CODE_PARAM_INVALID, LoginVO::new());
+    }
+
+    crate::service::auth::login(&req).await
 }
 
 // todo router
