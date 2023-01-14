@@ -1,12 +1,49 @@
 use crate::structs::AuthError;
 use axum::extract::Json;
 use axum::http::HeaderMap;
-use tracing::{debug, span, warn, Level};
+use tracing::{debug, span, Level};
 
+use crate::structs::global_response;
 use crate::structs::Claims;
+use crate::structs::{LoginAO, LoginVO, PassChangeVO, RegisterAO, RegisterVO, UserInfo};
 use headers::HeaderValue;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+
+#[tracing::instrument]
+pub async fn register_handler(Json(payload): Json<Value>) -> Json<Value> {
+    let req: RegisterAO = serde_json::from_value(payload).unwrap();
+    debug!("receive params, req: {:?}", req);
+
+    if req.email.is_empty()
+        || req.nick_name.is_empty()
+        || req.password.is_empty()
+        || req.code.is_empty()
+    {
+        return global_response::new(global_response::ERROR_CODE_PARAM_INVALID, RegisterVO::new());
+    }
+
+    crate::service::auth::register_user(&req).await
+}
+
+// todo router
+pub async fn login_handler(Json(payload): Json<Value>) -> Json<Value> {
+    let req: LoginAO = serde_json::from_value(payload).unwrap();
+    debug!("receive params, req: {:?}", req);
+
+    crate::structs::global_response::new(
+        crate::structs::global_response::ERROR_CODE_SUCCESS,
+        LoginVO::new(),
+    )
+}
+
+// todo router
+pub async fn change_pass_handler(_claims: Claims, Json(_payload): Json<Value>) -> Json<Value> {
+    crate::structs::global_response::new(
+        crate::structs::global_response::ERROR_CODE_SUCCESS,
+        PassChangeVO::new(),
+    )
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AuthBody {
@@ -41,7 +78,8 @@ pub async fn authorize(
             // generate expire_time here
             let expire_time = 1673426526502;
 
-            let claims = Claims::new(expire_time, "1".to_string());
+            let u = UserInfo::new();
+            let claims = Claims::new(expire_time, u);
             // Create the authorization token
             let token =
                 crate::utils::jwt::generate_token(&claims).map_err(|_| AuthError::TokenCreation)?;
@@ -69,104 +107,4 @@ pub async fn authenticate_handler(headers: HeaderMap) -> Result<Json<AuthBody>, 
     debug!("authenticating end");
 
     return r;
-}
-
-// todo router
-pub async fn register_handler(Json(payload): Json<Value>) -> Json<Value> {
-    let req: RegisterAO = serde_json::from_value(payload).unwrap();
-    debug!("receive params, req: {:?}", req);
-
-    // check code and others
-
-    // encode pass
-
-    // do others
-
-    // do insert
-    let create_user_r = crate::repository::mysql::UserEntity::create(
-        req.nick_name.clone(),
-        req.email,
-        req.password,
-    )
-    .await;
-
-    // create token and return
-    match create_user_r {
-        Ok(_) => crate::structs::global_response::new(
-            crate::structs::global_response::ERROR_CODE_SUCCESS,
-            RegisterVO::new(),
-        ),
-        Err(e) => {
-            warn!("register_handler, create user err: {}", e);
-            crate::structs::global_response::new(
-                crate::structs::global_response::ERROR_CODE_ERROR,
-                RegisterVO::new(),
-            )
-        }
-    }
-}
-
-// todo router
-pub async fn login_handler(Json(_payload): Json<Value>) -> Json<Value> {
-    crate::structs::global_response::new(
-        crate::structs::global_response::ERROR_CODE_SUCCESS,
-        LoginVO::new(),
-    )
-}
-
-// todo router
-pub async fn change_pass_handler(_claims: Claims, Json(_payload): Json<Value>) -> Json<Value> {
-    crate::structs::global_response::new(
-        crate::structs::global_response::ERROR_CODE_SUCCESS,
-        PassChangeVO::new(),
-    )
-}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-struct RegisterAO {
-    pub nick_name: String,
-    pub email: String,
-    pub password: String,
-    pub code: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-struct RegisterVO {}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-struct LoginAO {
-    pub email: Option<String>,
-    pub nick_name: Option<String>,
-    pub password: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-struct LoginVO {}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-struct PassChangeAO {
-    pub email: String,
-    pub new_pass: String,
-    pub code: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-struct PassChangeVO {}
-
-impl RegisterVO {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-impl LoginVO {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-impl PassChangeVO {
-    pub fn new() -> Self {
-        Self {}
-    }
 }

@@ -4,7 +4,7 @@ use axum::http::HeaderMap;
 use serde_json::Value;
 use tracing::{info_span, Instrument};
 
-// #[tracing:instrument]
+// #[tracing::instrument]
 pub async fn send_mail_code_handler(headers: HeaderMap, Json(payload): Json<Value>) -> Json<Value> {
     // request
     let request_id = super::get_trace_id_from_header(&headers);

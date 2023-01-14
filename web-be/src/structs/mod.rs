@@ -11,19 +11,22 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use tracing::warn;
 
 pub use request_response::*;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
-    user_info: UserInfo,
+    pub user_info: UserInfo,
     // expire_time: timestamp  ##this filed is must needed
-    exp: u64,
+    pub exp: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct UserInfo {
-    id: String,
+    pub id: String,
+    pub nick_name: String,
+    pub email: String,
 }
 
 #[derive(Serialize, Debug)]
@@ -64,11 +67,17 @@ where
             .map_err(|_| AuthError::InvalidToken)?;
         // Decode the user data
         let token_data = crate::utils::jwt::decode_token(bearer.token()).map_err(|e| {
-            println!("{}", e);
+            warn!("decode token err {}", e);
             AuthError::InvalidToken
         })?;
 
-        Ok(token_data.claims)
+        let claims: Claims = token_data.claims;
+        let now = chrono::Local::now().timestamp_millis() as u64;
+        if claims.exp <= now {
+            return Err(AuthError::InvalidToken);
+        }
+
+        Ok(claims)
     }
 }
 
@@ -88,21 +97,21 @@ impl IntoResponse for AuthError {
 }
 
 impl Claims {
-    pub fn new(expire_time: u64, id: String) -> Self {
+    pub fn new(expire_time: u64, u: UserInfo) -> Self {
         Self {
-            user_info: UserInfo::new(id),
+            user_info: u,
             exp: expire_time,
         }
-    }
-
-    pub fn get_user_info(&self) -> UserInfo {
-        self.user_info.clone()
     }
 }
 
 impl UserInfo {
-    pub fn new(id: String) -> Self {
-        Self { id }
+    pub fn new() -> Self {
+        Self {
+            id: "".to_string(),
+            nick_name: "".to_string(),
+            email: "".to_string(),
+        }
     }
 }
 

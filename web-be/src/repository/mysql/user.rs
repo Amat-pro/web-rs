@@ -15,7 +15,23 @@ pub struct UserEntity {
 }
 
 impl UserEntity {
-    pub async fn create(nick_name: String, email: String, password: String) -> Result<(), Error> {
+    pub fn new() -> Self {
+        Self {
+            id: 0,
+            nick_name: "".to_string(),
+            email: "".to_string(),
+            password: "".to_string(),
+            is_delete: 0,
+            create_time: 0,
+            update_time: 0,
+        }
+    }
+
+    pub async fn create(
+        nick_name: String,
+        email: String,
+        password: String,
+    ) -> Result<UserEntity, Error> {
         let mysql_pool = crate::lib::MYSQL_POOL.clone();
 
         let timestamp_millis = chrono::Local::now().timestamp_millis();
@@ -28,7 +44,16 @@ impl UserEntity {
         .await;
 
         match insert_r {
-            Ok(_) => Ok(()),
+            Ok(ok) => {
+                let mut u = UserEntity::new();
+                u.id = ok.last_insert_id();
+                u.nick_name = nick_name;
+                u.email = email;
+                u.password = password;
+                u.create_time = timestamp_millis;
+                u.update_time = timestamp_millis;
+                Ok(u)
+            }
             Err(e) => Err(e),
         }
     }
@@ -49,6 +74,27 @@ impl UserEntity {
             Err(e) => Err(e),
         }
     }
+
+    pub async fn find_one_user_by_email_or_nick_name(
+        email: &String,
+        nick_name: &String,
+    ) -> Result<UserEntity, Error> {
+        let mysql_pool = crate::lib::MYSQL_POOL.clone();
+
+        let query_r = sqlx::query_as!(
+            UserEntity,
+            "SELECT * from `user` where email = ? or nick_name = ? LIMIT 1",
+            email,
+            nick_name
+        )
+        .fetch_one(&mysql_pool)
+        .await;
+
+        match query_r {
+            Ok(entity) => Ok(entity),
+            Err(e) => Err(e),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -57,7 +103,7 @@ mod tests {
     use tokio::runtime;
 
     #[test]
-    fn test_create() {
+    fn test_find_pass_by_email() {
         let rt = runtime::Runtime::new().unwrap();
         let find_r = rt.block_on(UserEntity::find_pass_by_email(
             "2892798998@qq.com".to_string(),
@@ -65,6 +111,23 @@ mod tests {
         match find_r {
             Ok(pass) => {
                 println!("pass: {}", pass);
+            }
+            Err(err) => {
+                println!("err: {}", err);
+            }
+        }
+    }
+
+    #[test]
+    fn test_find_one_user_by_email_or_nick_name() {
+        let rt = runtime::Runtime::new().unwrap();
+        let find_r = rt.block_on(UserEntity::find_one_user_by_email_or_nick_name(
+            &"2892798998@qq.com".to_string(),
+            &"maomao".to_string(),
+        ));
+        match find_r {
+            Ok(entity) => {
+                println!("entity: {:?}", entity);
             }
             Err(err) => {
                 println!("err: {}", err);

@@ -31,3 +31,18 @@ pub fn generate_token<T: Serialize>(data: &T) -> Result<String> {
 pub fn decode_token<T: DeserializeOwned>(token: &str) -> Result<TokenData<T>> {
     decode(token, &KEYS.decoding, &Validation::default())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::generate_token;
+
+    #[test]
+    fn test_generate_token() {
+        let u = crate::structs::UserInfo::new();
+        let claims = crate::structs::Claims::new(1673456648000, u);
+
+        let token = generate_token(&claims).unwrap();
+
+        println!("token: {}", token);
+    }
+}
