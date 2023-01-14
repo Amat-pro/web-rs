@@ -1,76 +1,30 @@
+use crate::structs::{SendMailCodeAO, SendMailCodeVO};
 use axum::extract::Json;
-use serde::{Deserialize, Serialize};
+use axum::http::HeaderMap;
 use serde_json::Value;
-use tracing::warn;
+use tracing::{info_span, Instrument};
 
-// todo router
-pub async fn send_mail_code_handler(Json(payload): Json<Value>) -> Json<Value> {
+// #[tracing:instrument]
+pub async fn send_mail_code_handler(headers: HeaderMap, Json(payload): Json<Value>) -> Json<Value> {
+    // request
+    let request_id = super::get_trace_id_from_header(&headers);
+
+    let span = info_span!("send_mail_code_handler enter, trace_id: {:?}", request_id);
+
     let req: SendMailCodeAO = serde_json::from_value(payload).unwrap();
 
     let to = req.get_to();
     // check param
     if to.is_empty() {
         return crate::structs::global_response::new(
-            crate::structs::global_response::ERROR_CODE_ERROR,
+            crate::structs::global_response::ERROR_CODE_PARAM_INVALID,
             SendMailCodeVO::new(),
         );
     }
-    // check others
-    // ...
 
-    // generate code
-    let code = "1234".to_string();
+    crate::service::auth::send_email_with_default_limit(&to)
+        .instrument(span.clone())
+        .await
 
-    let set_email_code_r =
-        crate::repository::redis::set_email_code_with_default_expire(&code, &to).await;
-    match set_email_code_r {
-        Ok(_) => {
-            // send_mail
-            let send_mail_r = crate::lib::send_mail(
-                to.clone(),
-                "WEB-RS 发送邮箱验证码".to_string(),
-                "验证码为xxx".to_string(),
-            );
-            match send_mail_r {
-                Ok(_) => crate::structs::global_response::new(
-                    crate::structs::global_response::ERROR_CODE_SUCCESS,
-                    SendMailCodeVO::new(),
-                ),
-                Err(e) => {
-                    warn!("send mail to {} fail, err: {}", to, e);
-                    crate::structs::global_response::new(
-                        crate::structs::global_response::ERROR_CODE_ERROR,
-                        SendMailCodeVO::new(),
-                    )
-                }
-            }
-        }
-        Err(e) => {
-            warn!("send_mail_code_handler, set mail code err: {}", e);
-            crate::structs::global_response::new(
-                crate::structs::global_response::ERROR_CODE_ERROR,
-                SendMailCodeVO::new(),
-            )
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-struct SendMailCodeAO {
-    to: String,
-}
-
-impl SendMailCodeAO {
-    fn get_to(&self) -> String {
-        self.to.clone()
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-struct SendMailCodeVO {}
-
-impl SendMailCodeVO {
-    fn new() -> Self {
-        Self {}
-    }
+    // crate::service::auth::send_email_with_default_limit(&to).await
 }

@@ -28,3 +28,7 @@ impl ErrorCode {
 // definite error code like follows
 pub const ERROR_CODE_SUCCESS: ErrorCode = ErrorCode(10000 as u32, "success");
 pub const ERROR_CODE_ERROR: ErrorCode = ErrorCode(10001 as u32, "error");
+pub const ERROR_CODE_PARAM_INVALID: ErrorCode = ErrorCode(10002 as u32, "invalid param");
+
+pub const ERROR_CODE_EMAIL_SEND_INVALID: ErrorCode = ErrorCode(10003 as u32, "email send invalid");
+pub const ERROR_CODE_EMAIL_SEND_ERROR: ErrorCode = ErrorCode(10004 as u32, "email send error");

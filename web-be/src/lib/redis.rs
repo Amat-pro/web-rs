@@ -20,6 +20,9 @@ lazy_static! {
     };
 }
 
+pub const REDIS_PREFIX: &'static str = "WEB-RS";
+pub const AUTH_PREFIX: &'static str = "auth";
+
 pub async fn set(key: &String, value: &String) -> RedisResult<Value> {
     redis::cmd("SET")
         .arg(key)
@@ -40,7 +43,7 @@ pub async fn set_with_secs_expire(
     key: &String,
     value: &String,
     secs: usize,
-) -> RedisResult<(Value)> {
+) -> RedisResult<Value> {
     redis::cmd("SET")
         .arg(key)
         .arg(value)

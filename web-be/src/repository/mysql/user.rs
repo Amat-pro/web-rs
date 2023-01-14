@@ -50,3 +50,25 @@ impl UserEntity {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::UserEntity;
+    use tokio::runtime;
+
+    #[test]
+    fn test_create() {
+        let rt = runtime::Runtime::new().unwrap();
+        let find_r = rt.block_on(UserEntity::find_pass_by_email(
+            "2892798998@qq.com".to_string(),
+        ));
+        match find_r {
+            Ok(pass) => {
+                println!("pass: {}", pass);
+            }
+            Err(err) => {
+                println!("err: {}", err);
+            }
+        }
+    }
+}

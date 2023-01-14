@@ -23,3 +23,4 @@ redis = { version = "0.22.1", features = ["tokio-comp", "connection-manager"] }
 futures = "0.3.25"
 mongodb = {version = "2.3.1", features = ["tokio-runtime"]}
 sqlx = { version = "0.6", features = [ "runtime-tokio-native-tls" , "mysql"] }
+rand = "0.8.5"
