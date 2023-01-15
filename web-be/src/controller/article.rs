@@ -1,71 +1,93 @@
+use crate::structs::global_response;
 use crate::structs::Claims;
+use crate::structs::{
+    Article, ArticleCreateAO, ArticleCreateVO, ArticleListMineAO, ArticleUpdateAO, ArticleUpdateVO,
+    PageParam,
+};
 use axum::extract::Json;
-use serde::{Deserialize, Serialize};
+use axum::http::HeaderMap;
 use serde_json::Value;
+use tracing::info;
 
-// todo router
-pub async fn create_article_handler(_claims: Claims, Json(_payload): Json<Value>) -> Json<Value> {
-    crate::structs::global_response::new(
-        crate::structs::global_response::ERROR_CODE_SUCCESS,
-        ArticleCreateVO::new(),
-    )
+// todo test
+#[tracing::instrument]
+pub async fn create_article_handler(
+    headers: HeaderMap,
+    claims: Claims,
+    Json(payload): Json<Value>,
+) -> Json<Value> {
+    let request_id = super::get_trace_id_from_header(&headers);
+    info!("create_article_handler enter, trace_id: {:?}", request_id);
+
+    let req: ArticleCreateAO = serde_json::from_value(payload).unwrap();
+    if req.title.is_empty() {
+        return global_response::new(
+            global_response::ERROR_CODE_PARAM_INVALID,
+            ArticleCreateVO::new(),
+        );
+    }
+
+    crate::service::article::create(&claims.user_info, &req).await
 }
 
-// todo router
-pub async fn search_article_handler(Json(_payload): Json<Value>) -> Json<Value> {
-    let article_items: Vec<ArticleItem> = vec![];
+// todo test
+#[tracing::instrument]
+pub async fn update_article_handler(
+    headers: HeaderMap,
+    claims: Claims,
+    Json(payload): Json<Value>,
+) -> Json<Value> {
+    let request_id = super::get_trace_id_from_header(&headers);
+    info!("update_article_handler enter, trace_id: {:?}", request_id);
 
-    crate::structs::global_response::new(
-        crate::structs::global_response::ERROR_CODE_SUCCESS,
-        crate::structs::new_page::<Vec<ArticleItem>>(0, 0, 0, article_items),
-    )
+    let req: ArticleUpdateAO = serde_json::from_value(payload).unwrap();
+    if req.id.is_empty() || req.title.is_empty() {
+        return global_response::new(
+            global_response::ERROR_CODE_PARAM_INVALID,
+            ArticleUpdateVO::new(),
+        );
+    }
+
+    crate::service::article::update(&claims.user_info, &req).await
 }
 
-// todo router
-pub async fn list_mine_article_handler(
+#[tracing::instrument]
+pub async fn search_article_handler(
+    headers: HeaderMap,
     _claims: Claims,
     Json(_payload): Json<Value>,
 ) -> Json<Value> {
-    let article_items: Vec<ArticleItem> = vec![];
+    let request_id = super::get_trace_id_from_header(&headers);
+    info!("search_article_handler enter, trace_id: {:?}", request_id);
+
+    let article_items: Vec<Article> = vec![];
 
     crate::structs::global_response::new(
         crate::structs::global_response::ERROR_CODE_SUCCESS,
-        crate::structs::new_page::<Vec<ArticleItem>>(0, 0, 0, article_items),
+        crate::structs::new_page::<Vec<Article>>(0, 0, 0, article_items),
     )
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-struct ArticleCreateAO {
-    title: String,
-    description: Option<String>,
-    summary: Option<String>,
-    content: Option<String>,
-}
+// todo test
+#[tracing::instrument]
+pub async fn list_mine_article_handler(
+    headers: HeaderMap,
+    claims: Claims,
+    Json(payload): Json<Value>,
+) -> Json<Value> {
+    let request_id = super::get_trace_id_from_header(&headers);
+    info!(
+        "list_mine_article_handler enter, trace_id: {:?}",
+        request_id
+    );
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-struct ArticleSearchAO {
-    key_word: Option<String>,
-    page_param: Option<crate::structs::PageParam>,
-}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-struct ArticleListMineAO {
-    page_param: Option<crate::structs::PageParam>,
-}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-pub struct ArticleItem {
-    title: String,
-    description: Option<String>,
-    summary: Option<String>,
-    content: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-struct ArticleCreateVO {}
-
-impl ArticleCreateVO {
-    fn new() -> Self {
-        Self {}
+    let mut req: ArticleListMineAO = serde_json::from_value(payload).unwrap();
+    if req.page_param.is_none() {
+        req.page_param = Some(PageParam {
+            size: 10,
+            current: 1,
+        });
     }
+
+    crate::service::article::list_mine(&claims.user_info, &req).await
 }

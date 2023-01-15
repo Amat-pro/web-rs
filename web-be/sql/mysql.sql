@@ -18,7 +18,7 @@ CREATE TABLE `user` (
 ENGINE = InnoDB;
 
 CREATE TABLE `user_article` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `article_id` BIGINT NOT NULL DEFAULT 0,
   `user_id` BIGINT NOT NULL DEFAULT 0,
   `is_delete` BOOLEAN NOT NULL DEFAULT false,
@@ -27,3 +27,7 @@ CREATE TABLE `user_article` (
   PRIMARY KEY (`id`),
   INDEX `idx_user_id` USING BTREE (`user_id`) VISIBLE)
 ENGINE = InnoDB;
+
+ALTER TABLE `user_article` 
+CHANGE COLUMN `article_id` `article_id` VARCHAR(500) NOT NULL DEFAULT '0' ,
+ADD INDEX `idx_article_id` (`article_id` ASC) VISIBLE;

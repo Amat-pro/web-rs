@@ -16,6 +16,11 @@ use tracing::warn;
 pub use request_response::*;
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct GlobalError {
+    pub desc: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
     pub user_info: UserInfo,
     // expire_time: timestamp  ##this filed is must needed
@@ -31,17 +36,22 @@ pub struct UserInfo {
 
 #[derive(Serialize, Debug)]
 pub struct Page<T: Serialize> {
-    pub size: usize,
-    pub current: usize,
-    pub total: usize,
+    pub size: u64,
+    pub current: u64,
+    pub total: u64,
     pub data: T,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 
 pub struct PageParam {
-    pub size: usize,
-    pub current: usize,
+    pub size: u64,
+    pub current: u64,
+}
+
+pub struct LimitOffset {
+    pub limit: u64,
+    pub offset: u64,
 }
 
 #[derive(Debug)]
@@ -115,11 +125,50 @@ impl UserInfo {
     }
 }
 
-pub fn new_page<T: Serialize>(size: usize, current: usize, total: usize, data: T) -> Page<T> {
+impl GlobalError {
+    pub fn new(desc: Option<String>) -> Self {
+        Self { desc }
+    }
+
+    pub fn from_str(s: &str) -> Self {
+        Self {
+            desc: Some(s.to_string()),
+        }
+    }
+}
+
+pub fn new_page<T: Serialize>(size: u64, current: u64, total: u64, data: T) -> Page<T> {
     Page {
         size,
         current,
         total,
         data,
     }
+}
+
+pub fn build_limit_offset(count: u64, param: &PageParam) -> Result<LimitOffset, GlobalError> {
+    if count <= 0 {
+        return Err(GlobalError::new(Some(
+            "build_limit_offset_opt, invalid param for count".to_string(),
+        )));
+    }
+
+    if param.current <= 0 {
+        return Err(GlobalError::new(Some(
+            "build_limit_offset_opt, invalid param for param.current".to_string(),
+        )));
+    }
+
+    if param.size <= 0 {
+        return Err(GlobalError::new(Some(
+            "build_limit_offset_opt, invalid param for param.size".to_string(),
+        )));
+    }
+
+    let offset = (param.current - 1) * param.size;
+
+    Ok(LimitOffset {
+        limit: param.size,
+        offset,
+    })
 }

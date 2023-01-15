@@ -12,7 +12,10 @@ pub use hello_world::{
 };
 pub use mail::send_mail_code_handler;
 
-pub use article::{create_article_handler, list_mine_article_handler, search_article_handler};
+pub use article::{
+    create_article_handler, list_mine_article_handler, search_article_handler,
+    update_article_handler,
+};
 
 pub fn get_trace_id_from_header(header: &HeaderMap) -> Option<String> {
     let trace_id_o = header.get("trace_id");

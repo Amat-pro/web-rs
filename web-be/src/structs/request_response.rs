@@ -62,6 +62,54 @@ impl SendMailCodeAO {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct SendMailCodeVO {}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct ArticleCreateAO {
+    pub title: String,
+    pub description: Option<String>,
+    pub summary: Option<String>,
+    pub content: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct ArticleCreateVO {}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct ArticleUpdateAO {
+    pub id: String,
+    pub title: String,
+    pub description: Option<String>,
+    pub summary: Option<String>,
+    pub content: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct ArticleUpdateVO {}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct ArticleSearchAO {
+    pub key_word: String,
+    pub page_param: Option<crate::structs::PageParam>,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct ArticleListMineAO {
+    pub page_param: Option<crate::structs::PageParam>,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+pub struct Article {
+    pub id: String,
+    pub title: String,
+    pub description: Option<String>,
+    pub summary: Option<String>,
+    pub content: Option<String>,
+    pub create_time: i64,
+    pub update_time: i64,
+}
+
 impl RegisterVO {
     pub fn new() -> Self {
         Self {
@@ -96,11 +144,34 @@ impl PassChangeVO {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-pub struct SendMailCodeVO {}
-
 impl SendMailCodeVO {
     pub fn new() -> Self {
         Self {}
+    }
+}
+
+impl ArticleCreateVO {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl ArticleUpdateVO {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl Article {
+    pub fn new() -> Self {
+        Self {
+            id: "".to_string(),
+            title: "".to_string(),
+            description: None,
+            summary: None,
+            content: None,
+            create_time: 0,
+            update_time: 0,
+        }
     }
 }
