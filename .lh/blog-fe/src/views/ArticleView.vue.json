@@ -1,0 +1,22 @@
+{
+    "sourceFile": "blog-fe/src/views/ArticleView.vue",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 1,
+            "patches": [
+                {
+                    "date": 1673879098267,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1673879117276,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,13 @@\n <template>\n-    <div class=\"login\">\n-      <h1>This is a login page</h1>\n-    </div>\n-  </template>\n-  \n-  <style />\n\\ No newline at end of file\n+  <div class=\"login\">\n+    <h1>This is a login page</h1>\n+  </div>\n+</template>\n+\n+\n+\n+\n+\n+\n+\n+<style />\n"
+                }
+            ],
+            "date": 1673879098267,
+            "name": "Commit-0",
+            "content": "<template>\n    <div class=\"login\">\n      <h1>This is a login page</h1>\n    </div>\n  </template>\n  \n  <style />"
+        }
+    ]
+}
