@@ -20,7 +20,7 @@ pub async fn register_handler(headers: HeaderMap, Json(payload): Json<Value>) ->
     let req: RegisterAO = serde_json::from_value(payload).unwrap();
     debug!("receive params, req: {:?}", req);
 
-    // should encrypt pass
+    // perf: should encrypt pass
 
     if req.email.is_empty()
         || req.nick_name.is_empty()

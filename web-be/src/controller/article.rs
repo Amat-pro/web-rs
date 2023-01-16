@@ -9,7 +9,6 @@ use axum::http::HeaderMap;
 use serde_json::Value;
 use tracing::info;
 
-// todo test
 #[tracing::instrument]
 pub async fn create_article_handler(
     headers: HeaderMap,
@@ -30,7 +29,6 @@ pub async fn create_article_handler(
     crate::service::article::create(&claims.user_info, &req).await
 }
 
-// todo test
 #[tracing::instrument]
 pub async fn update_article_handler(
     headers: HeaderMap,
@@ -68,7 +66,6 @@ pub async fn search_article_handler(
     )
 }
 
-// todo test
 #[tracing::instrument]
 pub async fn list_mine_article_handler(
     headers: HeaderMap,

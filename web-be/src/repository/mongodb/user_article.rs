@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ArticleDoc {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub _id: Option<Bson>,
     pub title: String,
     pub description: Option<String>,
@@ -40,7 +41,11 @@ impl ArticleDoc {
         let r = collection.insert_one(doc, None).await;
         match r {
             Err(e) => Err(e),
-            Ok(insert_one_result) => Ok(insert_one_result.inserted_id.to_string()),
+            Ok(insert_one_result) => Ok(insert_one_result
+                .inserted_id
+                .as_object_id()
+                .unwrap()
+                .to_string()),
         }
     }
 
@@ -72,13 +77,14 @@ impl ArticleDoc {
         }
     }
 
-    pub async fn find_by_ids(ids: &Vec<String>) -> Result<Vec<ArticleDoc>, Error> {
+    pub async fn find_by_ids(ids: &Vec<Bson>) -> Result<Vec<ArticleDoc>, Error> {
         let collection = Self::get_collection();
+
+        let filter = doc! { "_id": {"$in": ids}};
 
         let find_ops = FindOptions::builder()
             .sort(doc! {"update_time": -1})
             .build();
-        let filter = doc! { "_id":  ids};
 
         let find_r = collection.find(filter, find_ops).await;
 

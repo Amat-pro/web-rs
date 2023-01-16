@@ -1,11 +1,13 @@
-use crate::repository::mongodb;
+use crate::repository::mongodb as repo_mongo;
 use crate::repository::mysql;
 use crate::structs::{
     global_response, new_page, Article, ArticleCreateAO, ArticleCreateVO, ArticleListMineAO,
     ArticleUpdateAO, ArticleUpdateVO, UserInfo,
 };
 use axum::extract::Json;
+use mongodb::bson::{oid::ObjectId, Bson};
 use serde_json::Value;
+use std::str::FromStr;
 use tracing::warn;
 
 #[tracing::instrument]
@@ -20,7 +22,7 @@ pub async fn create(user: &UserInfo, ao: &ArticleCreateAO) -> Json<Value> {
 
     let timestamp_millis = chrono::Local::now().timestamp_millis();
 
-    let mut article_doc = mongodb::ArticleDoc::new();
+    let mut article_doc = repo_mongo::ArticleDoc::new();
     article_doc.title = title.clone();
     article_doc.description = description.clone();
     article_doc.summary = summary.clone();
@@ -29,7 +31,7 @@ pub async fn create(user: &UserInfo, ao: &ArticleCreateAO) -> Json<Value> {
     article_doc.create_time = timestamp_millis;
     article_doc.update_time = timestamp_millis;
 
-    let create_r = mongodb::ArticleDoc::create(article_doc).await;
+    let create_r = repo_mongo::ArticleDoc::create(article_doc).await;
     if create_r.is_err() {
         warn!("mongodb create article err: {}", create_r.err().unwrap());
         return global_response::new(
@@ -64,7 +66,7 @@ pub async fn update(user: &UserInfo, ao: &ArticleUpdateAO) -> Json<Value> {
     } = ao;
 
     let update_r =
-        mongodb::ArticleDoc::update_by_id(id, title, description, summary, content, false).await;
+        repo_mongo::ArticleDoc::update_by_id(id, title, description, summary, content, false).await;
 
     if update_r.is_err() {
         warn!(
@@ -105,12 +107,13 @@ pub async fn list_mine(user: &UserInfo, ao: &ArticleListMineAO) -> Json<Value> {
         );
     }
 
-    let mut article_ids: Vec<String> = vec![];
+    let mut article_ids: Vec<Bson> = vec![];
     for article in article_page.data {
-        article_ids.push(article.article_id);
+        let id = Bson::ObjectId(ObjectId::from_str(article.article_id.as_str()).unwrap());
+        article_ids.push(id);
     }
 
-    let find_r2 = mongodb::ArticleDoc::find_by_ids(&article_ids).await;
+    let find_r2 = repo_mongo::ArticleDoc::find_by_ids(&article_ids).await;
     if find_r2.is_err() {
         warn!(
             "list_mine find_by_ids from mongo err: {}",
@@ -127,7 +130,7 @@ pub async fn list_mine(user: &UserInfo, ao: &ArticleListMineAO) -> Json<Value> {
     let mut articles: Vec<Article> = vec![];
     for doc in article_docs {
         let mut article = Article::new();
-        article.id = doc._id.unwrap().to_string();
+        article.id = doc._id.unwrap().as_object_id().unwrap().to_string();
         article.title = doc.title;
         article.description = doc.description;
         article.summary = doc.summary;
