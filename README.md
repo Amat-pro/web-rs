@@ -11,3 +11,6 @@ a web repo used rs.
     cargo run --package web-be --bin web-be 
 ### because tracing-subscriber(features: time, local-time), set compiled param
     RUSTFLAGS="--cfg unsound_local_offset"
+
+### postman collection json
+[Postman Collection Json](./web-be/postman.json)
