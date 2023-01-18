@@ -8,8 +8,6 @@ import ElementPlus from "element-plus";
 import { ElMessage } from "element-plus";
 import "element-plus/dist/index.css";
 
-import "./assets/main.css";
-
 const app = createApp(App);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

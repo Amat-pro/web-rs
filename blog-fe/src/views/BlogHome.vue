@@ -1,16 +1,10 @@
 <template>
   <div class="blog-home">
-    <el-container>
-      <el-header></el-header>
-      <el-main>
-        <el-row class="login-register">
-          <el-button type="success" round @click="login">登录</el-button>
-          <el-button type="success" round @click="register">注册</el-button>
-          <el-button type="success" round @click="viewArticle">游客</el-button>
-        </el-row>
-      </el-main>
-      <el-footer></el-footer>
-    </el-container>
+    <div class="buttons">
+      <el-button type="success" round @click="login">登录</el-button>
+      <el-button type="success" round @click="register">注册</el-button>
+      <el-button type="success" round @click="viewArticle">游客</el-button>
+    </div>
   </div>
 </template>
 
@@ -30,11 +24,21 @@ export default defineComponent({
     },
   },
   mounted() {
-    console.log("todo check token");
-    let token_valid = true;
-    if (token_valid) {
-      this.$router.replace("/blog-home");
-    }
+    console.log("=== mounted");
   },
 });
 </script>
+
+<style>
+.blog-home {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+.buttons {
+  margin: auto auto;
+}
+</style>

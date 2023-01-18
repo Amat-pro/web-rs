@@ -10,8 +10,13 @@ import { defineComponent } from "vue";
 export default defineComponent({
   name: "APP",
   mounted() {
-    console.log("APP");
-    this.$router.replace("/blog-home");
+    console.log("todo check token");
+    let token_valid = true;
+    if (token_valid) {
+      this.$router.replace("/blog-home");
+    } else {
+      this.$router.replace("/article");
+    }
   },
 });
 </script>
