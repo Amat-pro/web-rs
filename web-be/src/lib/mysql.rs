@@ -4,16 +4,10 @@ use crate::config::CONFIG;
 use futures::executor::block_on;
 use lazy_static::lazy_static;
 use sqlx::mysql::{MySqlPool, MySqlPoolOptions};
-use std::env;
 
 lazy_static! {
     pub static ref MYSQL_POOL: MySqlPool = {
         let mysql_config = CONFIG.get_mysql_config();
-
-        let _: Result<String, ()> = env::var("DATABASE_URL").or_else(|_e| {
-            env::set_var("DATABASE_URL", mysql_config.get_url());
-            Ok(mysql_config.get_url())
-        });
 
         let pool_r = block_on(
             MySqlPoolOptions::new()

@@ -7,6 +7,7 @@ mod router;
 mod service;
 mod structs;
 mod utils;
+
 use std::net::SocketAddr;
 use tokio::signal;
 
@@ -41,7 +42,7 @@ async fn graceful_shutdown() {
     };
 
     #[cfg(unix)]
-    let terminate = async {
+        let terminate = async {
         signal::unix::signal(signal::unix::SignalKind::terminate())
             .expect("failed to install signal handler")
             .recv()
@@ -49,7 +50,7 @@ async fn graceful_shutdown() {
     };
 
     #[cfg(not(unix))]
-    let terminate = std::future::pending::<()>();
+        let terminate = std::future::pending::<()>();
 
     tokio::select! {
         _ = ctrl_c => {},
@@ -57,7 +58,7 @@ async fn graceful_shutdown() {
     }
 
     println!("signal received, starting graceful shutdown(Do Others Here!).");
-    let _ = crate::lib::MYSQL_POOL.close();
+    let _ = lib::MYSQL_POOL.close();
 }
 
 #[cfg(test)]
